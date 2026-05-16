@@ -7,10 +7,12 @@
 ## 前置检查
 
 1. 检测 deliverables/.state.md 是否存在
-2. 检测场景模式：
-   - **NEW**: .state.md 为空或不存在 → 全新项目
-   - **RESUME**: .state.md 中 phase 非空且未归档 → 提示用户继续或放弃
-   - **CHANGE**: spec/ 目录下有已归档文件 → 变更模式
+2. 检测场景模式（按优先级从高到低判断）：
+   - **RESUME**: .state.md 中 phase 非空且 phase≠done → 有未完成的流程，提示用户继续或放弃
+   - **CHANGE**: spec/ 目录下存在 .md 文件（即有已归档的历史需求）→ 变更模式
+   - **NEW**: 以上均不满足（.state.md 为空/不存在/phase=done，且 spec/ 为空）→ 全新项目
+
+⚠️ 关键：phase=done 或 phase=archive 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
 
 ## Step 1: 初始化任务目录
 

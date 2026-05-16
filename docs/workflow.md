@@ -262,12 +262,14 @@ PM 恢复执行时（新会话或上下文重置后）：
 
 **Step 1: 场景检测**
 
-根据当前状态判断场景：
+根据当前状态判断场景（按优先级从高到低）：
 
 - 检查 deliverables/.state.md：
-  - 为空/不存在 → MODE=NEW
-  - phase 非空且未归档 → MODE=RESUME
-  - spec/ 下有已归档文件 → MODE=CHANGE
+  - phase 非空且 phase≠done → MODE=RESUME（有未完成流程）
+  - spec/ 下存在 .md 文件 → MODE=CHANGE（有已归档历史需求）
+  - 以上均不满足 → MODE=NEW（全新项目）
+
+⚠️ 关键：phase=done 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
 
 **MODE = RESUME（断点续作）：**
 - 向用户确认："检测到未完成的 {REQ-ID}，是否继续？"
