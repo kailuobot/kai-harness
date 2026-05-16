@@ -4,6 +4,7 @@
 # deliverables/ 过程产物
 deliverables/*
 !deliverables/.state.md
+!deliverables/process.log
 !deliverables/handoffs/
 deliverables/handoffs/*
 !deliverables/handoffs/.handoff-template.md
@@ -22,6 +23,7 @@ output/final/
 .DS_Store
 node_modules/
 *.log
+!deliverables/process.log
 
 # 编辑器
 .vscode/
