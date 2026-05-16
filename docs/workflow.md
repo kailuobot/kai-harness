@@ -39,6 +39,26 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
 
 ---
 
+## 自动推进模式（/pdt-run）
+
+用户可通过 `/pdt-run` 启动全流程自动推进模式，等效于依次执行 init → propose → apply → archive，但无需在阶段间手动输入命令。
+
+- 阶段间自动衔接，消除手动触发等待（实测节省约 5 分钟）
+- 阶段内所有人工审批节点（★标记）照常暂停
+- 支持断点恢复（.state.md 中 `auto_advance: true`）
+- 各阶段独立命令（/pdt-init、/pdt-propose、/pdt-apply、/pdt-archive）仍可单独使用
+
+推进触发条件：
+
+| 完成标记 | 自动推进动作 |
+|---------|------------|
+| INIT-DONE | → propose 阶段 |
+| PROPOSE-DONE / SR1 通过 | → apply 阶段 |
+| SR3-DONE | → archive 阶段 |
+| phase=done | 打印最终摘要，流程结束 |
+
+---
+
 ## 详细时序
 
 ```
