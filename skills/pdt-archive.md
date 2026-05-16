@@ -2,17 +2,18 @@
 
 产物归档 + 结项确认。PM 执行，支持首次归档和变更归档两种模式。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
 
 ---
 
 ## 前置检查
 
-1. 验证 .state.md 中 sr_status.SR3=approved
-2. 验证 deliverables/output/ 存在且非空
-3. 验证 deliverables/sa/requirement-spec.md 存在
-4. 验证 deliverables/sa/design.md 存在
-5. 不满足则阻塞，提示用户先完成 /pdt-apply
+1. 读取 `deliverables/.state.md` 获取当前 req_id
+2. 验证 `deliverables/{REQ-ID}/.state.md` 中 sr_status.SR3=approved
+3. 验证 `deliverables/{REQ-ID}/output/` 存在且非空
+4. 验证 `deliverables/{REQ-ID}/sa/requirement-spec.md` 存在
+5. 验证 `deliverables/{REQ-ID}/sa/design.md` 存在
+6. 不满足则阻塞，提示用户先完成 /pdt-apply
 
 ## 归档模式检测
 
@@ -25,12 +26,12 @@
 
 1. `[PM] 启动 ARC-1 需求归档`
 2. 首次归档:
-   - 复制 deliverables/sa/requirement-spec.md → spec/requirement-spec.md
+   - 复制 `deliverables/{REQ-ID}/sa/requirement-spec.md` → `spec/requirement-spec.md`
 3. 变更归档:
-   - 读取 spec/requirement-spec.md（已有）
-   - 读取 deliverables/sa/requirement-spec.md（新增/变更）
+   - 读取 `spec/requirement-spec.md`（已有）
+   - 读取 `deliverables/{REQ-ID}/sa/requirement-spec.md`（新增/变更）
    - 合并内容，保留已有条目，追加新增条目
-   - 写入 spec/requirement-spec.md
+   - 写入 `spec/requirement-spec.md`
 4. 校验目标文件存在且非空
 5. `[PM] ARC-1 完成`
 
@@ -40,9 +41,9 @@
 
 1. `[PM] 启动 ARC-2 设计归档`
 2. 首次归档:
-   - 复制 deliverables/sa/design.md → spec/design.md
+   - 复制 `deliverables/{REQ-ID}/sa/design.md` → `spec/design.md`
 3. 变更归档:
-   - 合并新设计内容到 spec/design.md
+   - 合并新设计内容到 `spec/design.md`
    - 更新 Tasks 清单和对照表
 4. 校验目标文件存在且非空
 5. `[PM] ARC-2 完成`
@@ -52,10 +53,10 @@
 **执行角色:** PM
 
 1. `[PM] 启动 ARC-3 代码归档`
-2. 将 deliverables/output/ 内容复制到 output/final/
+2. 将 `deliverables/{REQ-ID}/output/` 内容复制到 `output/final/`
 3. 首次归档: 直接复制全部文件
 4. 变更归档: 覆盖已有同名文件，保留不冲突的已有文件
-5. 校验 output/final/ 非空
+5. 校验 `output/final/` 非空
 6. `[PM] ARC-3 完成`
 
 ## Step SR4: 项目结项确认（人工审批）
@@ -71,10 +72,10 @@
    - 本次需求编号: {REQ-ID}
 3. 等待用户决策：
    - **确认结项**:
-     - 写入 deliverables/SR4-record.md
-     - 更新 .state.md:
+     - 写入 `deliverables/{REQ-ID}/SR4-record.md`
+     - 更新 `deliverables/{REQ-ID}/.state.md`:
        ```yaml
-       phase: archive
+       phase: done
        current_step: SR4-DONE
        sr_status.SR4: approved
        ```

@@ -167,17 +167,17 @@ Handoff 文件: deliverables/handoffs/{handoff-id}.md
 PM 在每次调度非 PM 角色前，MUST 按以下顺序执行：
 
 0. 打印心跳: `[PM] 调度 {角色} 执行 {任务类型}`
-1. 写入 Handoff 文件 → `deliverables/handoffs/{REQ-ID}-{STEP-ID}-R{N}.md`
+1. 写入 Handoff 文件 → `deliverables/{REQ-ID}/handoffs/{REQ-ID}-{STEP-ID}-R{N}.md`
    - 使用 deliverables/handoffs/.handoff-template.md 格式
    - 白名单必须精确列出目标角色可读取的每一个文件路径（禁止通配符）
-2. 更新 `.state.md` → current_role, current_step, current_handoff
+2. 更新 `deliverables/{REQ-ID}/.state.md` → current_role, current_step, current_handoff
 3. 发出 [调度指令]（含 Handoff 文件路径字段）
-4. 追加日志到 `deliverables/process.log`
+4. 追加日志到 `deliverables/{REQ-ID}/process.log`
 
 目标角色完成后，PM：
 5. 验证产出物（文件存在 + 非空 + 格式合规）
-6. 更新 `.state.md`（追加已完成步骤、恢复 current_role 为 PM）
-7. 追加日志到 `deliverables/process.log`
+6. 更新 `deliverables/{REQ-ID}/.state.md`（追加已完成步骤、恢复 current_role 为 PM）
+7. 追加日志到 `deliverables/{REQ-ID}/process.log`
 
 ### 心跳打印规则
 
@@ -193,7 +193,7 @@ PM 在以下时机必须打印心跳信息（格式: `[PM] {描述}`）：
 
 ### 过程日志规则
 
-所有角色的执行过程必须记录到 `deliverables/process.log`，格式：
+所有角色的执行过程必须记录到 `deliverables/{REQ-ID}/process.log`，格式：
 
 ```
 [{时间}] [{角色}] {事件描述}
@@ -217,13 +217,14 @@ PM 在以下时机必须打印心跳信息（格式: `[PM] {描述}`）：
 ### 断点恢复协议
 
 PM 恢复执行时（新会话或上下文重置后）：
-1. 读取 `deliverables/.state.md`
-2. 根据 phase + current_role + current_step 确定恢复点
-3. 检查 current_handoff 对应文件的 status：
+1. 读取 `deliverables/.state.md` 获取当前 req_id
+2. 读取 `deliverables/{REQ-ID}/.state.md` 获取详细状态
+3. 根据 phase + current_role + current_step 确定恢复点
+4. 检查 current_handoff 对应文件的 status：
    - status=done → 推进下一步
    - status=pending → 重新派发（创建新 handoff，轮次+1）
    - status=failed → 进入修复循环
-4. 禁止依赖对话历史推断进度
+5. 禁止依赖对话历史推断进度
 
 ### 异常处理
 

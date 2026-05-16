@@ -2,17 +2,18 @@
 
 需求初始化与澄清。PM 主导，人机协作打磨 Proposal。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
 
 ---
 
 ## 前置检查
 
-1. 检测 deliverables/.state.md 是否存在
-2. 检测场景模式（按优先级从高到低判断）：
-   - **RESUME**: .state.md 中 phase 非空且 phase≠done → 有未完成的流程，提示用户继续或放弃
+1. 检测 deliverables/.state.md 是否存在（全局状态指针）
+2. 如存在，读取其中 req_id，检查 `deliverables/{req_id}/.state.md` 的 phase
+3. 检测场景模式（按优先级从高到低判断）：
+   - **RESUME**: 最近 REQ 的 phase 非空且 phase≠done → 有未完成的流程，提示用户继续或放弃
    - **CHANGE**: spec/ 目录下存在 .md 文件（即有已归档的历史需求）→ 变更模式
-   - **NEW**: 以上均不满足（.state.md 为空/不存在/phase=done，且 spec/ 为空）→ 全新项目
+   - **NEW**: 以上均不满足 → 全新项目
 
 ⚠️ 关键：phase=done 或 phase=archive 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
 
@@ -21,8 +22,19 @@
 **执行角色:** PM
 
 1. 生成需求编号（REQ001, REQ002...递增）
-2. 创建 deliverables/ 子目录结构（如不存在）
-3. 更新 .state.md:
+2. 创建 `deliverables/{REQ-ID}/` 隔离目录结构：
+   ```
+   deliverables/{REQ-ID}/
+   ├── sa/
+   ├── te/
+   ├── de/
+   ├── output/
+   ├── handoffs/
+   ├── baselines/
+   ├── .state.md
+   └── process.log
+   ```
+3. 写入 `deliverables/{REQ-ID}/.state.md`:
    ```yaml
    req_id: REQ{NNN}
    phase: init
@@ -49,10 +61,11 @@
 
 **执行角色:** PM
 
-1. 将 Proposal 草稿写入 deliverables/proposal.md
+1. 将 Proposal 草稿写入 `deliverables/{REQ-ID}/proposal.md`
 2. 向用户呈现 Proposal 全文，请求确认
 3. 用户确认通过：
-   - 更新 .state.md: `phase: init, current_step: INIT-DONE`
+   - 更新 `deliverables/{REQ-ID}/.state.md`: `phase: init, current_step: INIT-DONE`
+   - 更新 `deliverables/.state.md`: `req_id: {REQ-ID}`（全局指针）
    - `[PM] Proposal 定稿完成，可执行 /pdt-propose`
 4. 用户要求修改：
    - 根据反馈修改 Proposal

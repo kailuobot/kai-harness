@@ -173,13 +173,22 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │   └── pdt-archive.md         → 引用 skills/pdt-archive.md
 │
 ├── reference/                 # 用户输入参考资料
-├── deliverables/              # 过程产物（工作区）
-│   ├── .state.md
+├── deliverables/              # 过程产物（按 REQ-ID 隔离）
+│   ├── .state.md              # 全局指针（仅存 req_id）
 │   ├── handoffs/
-│   ├── sa/
-│   ├── te/
-│   ├── de/
-│   └── output/
+│   │   └── .handoff-template.md
+│   └── {REQ-ID}/             # 每个需求独立目录
+│       ├── .state.md          # 该需求的详细状态
+│       ├── process.log        # 过程日志
+│       ├── proposal.md
+│       ├── plan-action.md
+│       ├── SR{N}-record.md
+│       ├── handoffs/          # 该需求的 handoff 文件
+│       ├── sa/                # BA/SA 产出
+│       ├── te/                # TE 产出
+│       ├── de/                # DE 产出
+│       ├── output/            # 开发产出物
+│       └── baselines/         # 基线快照
 ├── spec/                      # 用户项目归档规格
 └── output/final/              # 最终交付物
 ```

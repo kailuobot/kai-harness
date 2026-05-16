@@ -1,16 +1,23 @@
 # 本地配置
 .claude/settings.local.json
 
-# deliverables/ 过程产物
-deliverables/*
+# deliverables/ 过程产物（按 REQ-ID 隔离）
+deliverables/REQ*/
+deliverables/sa/
+deliverables/te/
+deliverables/de/
+deliverables/output/
+deliverables/baselines/
+deliverables/proposal.md
+deliverables/plan-action.md
+deliverables/SR*-record.md
+deliverables/process.log
+
+# 保留全局指针和模板
 !deliverables/.state.md
-!deliverables/process.log
 !deliverables/handoffs/
 deliverables/handoffs/*
 !deliverables/handoffs/.handoff-template.md
-
-# deliverables 下的基线快照
-deliverables/baselines/
 
 # spec/ 用户归档产物（框架仓库不含用户数据）
 spec/*.md
@@ -23,7 +30,6 @@ output/final/
 .DS_Store
 node_modules/
 *.log
-!deliverables/process.log
 
 # 编辑器
 .vscode/
