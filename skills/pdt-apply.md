@@ -1,6 +1,6 @@
 # Skill: pdt-apply
 
-开发实现 → 审计验证 → 人工审批。PM 调度，DE/TE 分步执行，支持多轮修复和断点续作。
+开发实现 → 审计验证 → 人工审批。按 mode 裁剪步骤。
 
 **日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
 
@@ -9,8 +9,8 @@
 ## 前置检查
 
 1. 读取 `deliverables/.state.md` 获取当前 req_id
-2. 验证 `deliverables/{REQ-ID}/.state.md` 中 sr_status.SR1=approved
-3. 验证 `deliverables/{REQ-ID}/sa/design.md` 存在且非空
+2. 验证 `deliverables/{REQ-ID}/.state.md` 中 current_step=PROPOSE-DONE
+3. 读取 mode 字段确定流程裁剪方式
 4. 验证 `deliverables/{REQ-ID}/plan-action.md` 存在且非空
 5. 不满足则阻塞，提示用户先完成 /pdt-propose
 
@@ -20,97 +20,139 @@
 2. 跳过已完成的 Task，从未完成的 Task 继续
 3. `[PM] 断点恢复，从 {step_id} 继续`
 
-## Step DEV-1: 编码实现（逐任务循环）
+---
 
-**调度角色:** PM → DE
+## fast 模式
 
-对 plan-action.md 中的每个 Task 循环执行：
+DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审批点）。
 
-### DEV-1.{N}: 单任务开发
+**Step 1: DE 批量开发**
+
+1. `[PM] fast 模式，DE 批量开发所有任务`
+2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-R1.md`
+   - to: DE
+   - 白名单: `deliverables/{REQ-ID}/plan-action.md`, `deliverables/{REQ-ID}/proposal.md`, 已有代码
+   - 期望输出: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/de/code-report.md`
+3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=DEV-1, current_role=DE
+4. 派发任务:
+   - [Claude Code] spawn SubAgent，注入 handoff + agents/de.md + 白名单文件
+   - [Cline] 切换角色为 DE，指示读取 handoff
+5. 接收回报，校验输出文件存在性
+6. `[PM] 开发完成`
+
+**Step 2: TE 轻量审计**
+
+1. `[PM] fast 模式，TE 轻量审计（工程验证，跳过E2E）`
+2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-R1.md`
+   - to: TE
+   - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/proposal.md`
+   - 期望输出: `deliverables/{REQ-ID}/te/temp-test-report.md`
+   - 约束: 仅执行工程验证（lint + 构建 + 基础功能检查），跳过浏览器E2E
+3. 派发任务给 TE
+4. 接收回报:
+   - PASS → 继续 Step 3
+   - FAIL → 修复循环（最多5轮）
+
+**Step 3: 人工确认（唯一审批点）**
+
+1. `[PM] 进入人工确认`
+2. 向用户呈现：
+   ```
+   [人工确认]
+   模式: fast
+   产出文件: deliverables/{REQ-ID}/output/
+   审计报告: deliverables/{REQ-ID}/te/temp-test-report.md
+   请确认: 通过 / 驳回（请说明原因）
+   ```
+3. 用户通过:
+   - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR2=skipped, sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
+   - `[PM] 确认通过（fast模式），可执行 /pdt-archive`
+4. 用户驳回:
+   - 记录原因，回退 DE 修复
+
+---
+
+## standard 模式
+
+逐任务循环（DE→TE→人工确认）→ SR2 → 最终审计 → SR3。
+
+**Step 1: 逐任务开发+审计循环**
+
+⚠️ 每个任务必须走完 DE开发→TE审计→人工确认 后，才能开始下一个任务。
+
+```
+FOR 每个待开发任务 IN plan-action.md（跳过已完成）:
+    DE 开发 → TE 审计（失败则修复，最多5轮）→ 人工确认
+    → 清洗上下文，继续下一个任务
+END FOR
+```
+
+对每个 Task-{N}：
 
 1. `[PM] 启动 DEV-1.{N}，派发 Task-{N} 给 DE`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R1.md`
    - to: DE
    - 白名单: `deliverables/{REQ-ID}/sa/design.md`（Task-{N} 部分）, 已有代码
    - 期望输出: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/de/code-report.md`
-3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=DEV-1.{N}
-4. 派发任务:
-   - [Claude Code] spawn SubAgent，注入 handoff + agents/de.md + 白名单文件
-   - [Cline] 切换角色为 DE，指示读取 handoff
-5. 接收回报，校验输出文件存在性
+3. 派发任务给 DE
+4. DE 完成后，派发 TE 审计:
+   - 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
+   - TE 执行完整审计（含 E2E）
+5. 审计结果:
+   - PASS → 人工确认该任务 → 记入 completed_steps → 下一个 Task
+   - FAIL → 修复循环（最多5轮）
 
-### DEV-1.{N} 审计（TE 验证）
+**Step 2: SR2 功能评审**
 
-6. `[PM] Task-{N} 开发完成，派发审计给 TE`
-7. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST-T{N}-R1.md`
-   - to: TE
-   - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/sa/requirement-spec.md`, `deliverables/{REQ-ID}/te/testcases.md`
-   - 期望输出: `deliverables/{REQ-ID}/te/temp-test-report.md`
-8. 派发任务给 TE
-9. 接收回报，检查测试结论:
-   - **PASS**: `[PM] Task-{N} 审计通过` → 记入 completed_steps → 下一个 Task
-   - **FAIL**: 进入修复循环
-
-### 修复循环（最多 5 轮）
-
-10. `[PM] Task-{N} 审计失败（轮次 {R}/5），派发修复给 DE`
-11. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
-    - 附加: 上轮失败原因、失败报告路径
-12. DE 修复 → TE 重新审计
-13. 轮次达 5 次仍失败: `[PM] Task-{N} 超过最大重试次数，上升人工审核`
-
-### 人工逐任务确认
-
-14. 每个 Task 审计通过后，向用户简要呈现结果
-15. 用户确认 OK → 继续下一个 Task
-16. 用户发现问题 → 记录问题，进入修复循环
-
-## Step SR2: 功能评审（人工审批）
-
-**执行角色:** PM（人机交互）
-
-1. `[PM] 所有 Task 开发+审计完成，启动 SR2 功能评审`
+1. `[PM] 所有 Task 完成，启动 SR2 功能评审`
 2. 向用户呈现：
-   - 已完成 Task 列表及各自测试结论
-   - 代码报告摘要
-   - 临时测试报告摘要
-3. 等待用户决策：
-   - **通过**:
-     - 写入 `deliverables/{REQ-ID}/SR2-record.md`
-     - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR2=approved
-     - `[PM] SR2 通过，执行最终审计`
-   - **驳回**:
-     - 记录驳回原因，回退到指定 Task 重新开发
+   ```
+   [人工审批节点]
+   评审节点: SR2
+   审批内容摘要:
+     - 已完成 Task 列表及各自审计结论
+     - 代码报告摘要
+   相关产物: deliverables/{REQ-ID}/output/, deliverables/{REQ-ID}/te/temp-test-report.md
+   请确认: 通过 / 驳回（请说明原因）
+   ```
+3. 通过: 写入 SR2-record.md，继续
+4. 驳回: 回退指定 Task
 
-## Step TEST-2: 最终审计
+**Step 3: TE 最终审计**
 
-**调度角色:** PM → TE
-
-1. `[PM] 启动 TEST-2 最终审计`
+1. `[PM] 启动最终审计`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST2-R1.md`
-   - to: TE
-   - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/sa/requirement-spec.md`, `deliverables/{REQ-ID}/te/testcases.md`
+   - 全量测试（E2E + 回归 + 工程验证）
    - 期望输出: `deliverables/{REQ-ID}/te/final-test-report.md`
-3. 派发任务给 TE（全量测试：E2E + 回归 + 工程验证）
-4. 接收回报，检查结论:
-   - **PASS**: 进入 SR3
-   - **FAIL**: 回退修复（同修复循环逻辑）
+3. 结论: PASS → SR3 / FAIL → 修复
 
-## Step SR3: 最终功能评审（人工审批）
-
-**执行角色:** PM（人机交互）
+**Step 4: SR3 最终评审**
 
 1. `[PM] 启动 SR3 最终功能评审`
-2. 向用户呈现：
-   - 最终测试报告
-   - 全部产出物清单
-3. 等待用户决策：
-   - **通过**:
-     - 写入 `deliverables/{REQ-ID}/SR3-record.md`
-     - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
-     - `[PM] SR3 通过，可执行 /pdt-archive`
-   - **驳回**:
-     - 记录驳回原因，回退修复
+2. 向用户呈现最终测试报告 + 产出物清单
+3. 通过:
+   - 写入 SR3-record.md
+   - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
+   - `[PM] SR3 通过，可执行 /pdt-archive`
+4. 驳回: 回退修复
+
+---
+
+## full 模式
+
+与 standard 模式相同流程，无裁剪。
+
+（full 模式的 apply 阶段与 standard 完全一致，区别仅在 propose 阶段有 SR1 评审）
+
+---
+
+## 修复循环（所有模式通用）
+
+1. `[PM] Task-{N} 审计失败（轮次 {R}/5），派发修复给 DE`
+2. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
+   - 附加: 上轮失败原因、失败报告路径
+3. DE 修复 → TE 重新审计
+4. 轮次达 5 次仍失败: `[PM] Task-{N} 超过最大重试次数，上升人工审核`
 
 ## 异常处理
 

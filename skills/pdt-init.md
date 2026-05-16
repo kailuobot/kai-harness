@@ -15,7 +15,7 @@
    - **CHANGE**: spec/ 目录下存在 .md 文件（即有已归档的历史需求）→ 变更模式
    - **NEW**: 以上均不满足 → 全新项目
 
-⚠️ 关键：phase=done 或 phase=archive 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
+⚠️ 关键：phase=done 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
 
 ## Step 1: 初始化任务目录
 
@@ -37,6 +37,7 @@
 3. 写入 `deliverables/{REQ-ID}/.state.md`:
    ```yaml
    req_id: REQ{NNN}
+   mode: ""
    phase: init
    current_step: INIT-1
    current_role: PM
@@ -57,7 +58,39 @@
    - 仅围绕变更点提问，不重复已有内容
 4. 根据用户回答，生成 Proposal 草稿
 
-## Step 3: Proposal 定稿
+## Step 3: 模式选择
+
+**执行角色:** PM（人机交互）
+
+Proposal 草稿完成后，PM 根据需求规模向用户推荐模式：
+
+```
+[模式选择]
+根据需求规模分析，建议使用 {推荐模式} 模式：
+
+  fast     — 小调整（bug修复、≤5个文件、无需重新设计）
+             流程：PM出plan → DE开发 → TE轻量审计 → 人工确认 → 归档
+             预估：5-10分钟
+
+  standard — 新功能（需设计，不跨模块）
+             流程：SA设计 → TE用例 → DE开发 → TE审计 → SR2+SR3 → 归档
+             预估：15-20分钟
+
+  full     — 大型需求（跨模块、需完整评审链）
+             流程：BA需求 → SA设计 → TE用例 → SR1 → DE开发 → SR2+SR3 → SR4
+             预估：30+分钟
+
+请选择模式:
+```
+
+推荐逻辑：
+- 涉及文件 ≤5 且无新架构 → 推荐 fast
+- 单模块新功能或中等改动 → 推荐 standard
+- 跨模块、多角色协作、需完整追溯 → 推荐 full
+
+用户选择后，写入 `deliverables/{REQ-ID}/.state.md`: `mode: {fast|standard|full}`
+
+## Step 4: Proposal 定稿
 
 **执行角色:** PM
 
@@ -66,7 +99,7 @@
 3. 用户确认通过：
    - 更新 `deliverables/{REQ-ID}/.state.md`: `phase: init, current_step: INIT-DONE`
    - 更新 `deliverables/.state.md`: `req_id: {REQ-ID}`（全局指针）
-   - `[PM] Proposal 定稿完成，可执行 /pdt-propose`
+   - `[PM] Proposal 定稿完成（模式: {mode}），可执行 /pdt-propose`
 4. 用户要求修改：
    - 根据反馈修改 Proposal
    - 重新呈现，循环直到确认
