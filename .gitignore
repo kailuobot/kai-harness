@@ -1,0 +1,29 @@
+# 本地配置
+.claude/settings.local.json
+
+# deliverables/ 过程产物
+deliverables/*
+!deliverables/.state.md
+!deliverables/handoffs/
+deliverables/handoffs/*
+!deliverables/handoffs/.handoff-template.md
+
+# deliverables 下的基线快照
+deliverables/baselines/
+
+# spec/ 用户归档产物（框架仓库不含用户数据）
+spec/*.md
+spec/baselines/
+
+# output 产物
+output/final/
+
+# 系统文件
+.DS_Store
+node_modules/
+*.log
+
+# 编辑器
+.vscode/
+!.vscode/settings.json
+.idea/
