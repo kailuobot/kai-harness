@@ -86,12 +86,12 @@
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-REQ1-R1.md`
    - to: BA
    - 白名单: reference/*, `deliverables/{REQ-ID}/proposal.md`
-   - 期望输出: `deliverables/{REQ-ID}/sa/requirement-spec.md`
+   - 期望输出: `deliverables/{REQ-ID}/ba/requirement-spec.md`
 3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=REQ-1, current_handoff={handoff文件名}
 4. 派发任务:
    - [Claude Code] spawn SubAgent，注入 handoff + agents/ba.md + 白名单文件
    - [Cline] 切换角色为 BA，指示读取 handoff
-5. 接收回报，校验 `deliverables/{REQ-ID}/sa/requirement-spec.md` 存在且非空
+5. 接收回报，校验 `deliverables/{REQ-ID}/ba/requirement-spec.md` 存在且非空
 6. `[PM] REQ-1 完成，需求规格已生成`
 
 **Step 2: 调度 SA 架构设计（REQ-2）**
@@ -99,7 +99,7 @@
 1. `[PM] 启动 REQ-2 架构设计，派发任务给 SA`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-REQ2-R1.md`
    - to: SA
-   - 白名单: `deliverables/{REQ-ID}/sa/requirement-spec.md`
+   - 白名单: `deliverables/{REQ-ID}/ba/requirement-spec.md`
    - 期望输出: `deliverables/{REQ-ID}/sa/design.md`
 3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=REQ-2
 4. 派发任务给 SA
@@ -111,7 +111,7 @@
 1. `[PM] 启动 REQ-3 测试用例设计，派发任务给 TE`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-REQ3-R1.md`
    - to: TE
-   - 白名单: `deliverables/{REQ-ID}/sa/requirement-spec.md`, `deliverables/{REQ-ID}/sa/design.md`
+   - 白名单: `deliverables/{REQ-ID}/ba/requirement-spec.md`, `deliverables/{REQ-ID}/sa/design.md`
    - 期望输出: `deliverables/{REQ-ID}/te/testcases.md`
 3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=REQ-3
 4. 派发任务给 TE

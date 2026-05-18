@@ -27,7 +27,7 @@
 2. fast 模式: 跳过（无 requirement-spec.md）
 3. standard 模式: 跳过（无 requirement-spec.md，仅有 design.md）
 4. full 模式:
-   - 首次归档: 复制 `deliverables/{REQ-ID}/sa/requirement-spec.md` → `spec/requirement-spec.md`
+   - 首次归档: 复制 `deliverables/{REQ-ID}/ba/requirement-spec.md` → `spec/requirement-spec.md`
    - 变更归档: merge 到 `spec/requirement-spec.md`
 5. 校验目标文件存在且非空（full 模式）
 6. `[PM] ARC-1 完成`

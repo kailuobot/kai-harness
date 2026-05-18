@@ -15,7 +15,7 @@
 ## 输入
 
 - handoff 白名单指定的文件（通常包括）：
-  - deliverables/sa/requirement-spec.md
+  - deliverables/ba/requirement-spec.md
 
 ## 输出
 

@@ -223,7 +223,7 @@ PM 在以下时机必须打印心跳信息（格式: `[PM] {描述}`）：
 ```
 [2026-05-16T10:00:00Z] [PM] /pdt-propose 流程启动
 [2026-05-16T10:00:01Z] [PM] 调度 BA 执行需求分析
-[2026-05-16T10:01:30Z] [BA] 需求分析完成，输出: deliverables/sa/requirement-spec.md
+[2026-05-16T10:01:30Z] [BA] 需求分析完成，输出: deliverables/ba/requirement-spec.md
 [2026-05-16T10:01:31Z] [PM] BA 需求分析完成，产物已验证
 [2026-05-16T10:01:32Z] [PM] 调度 SA 执行架构设计
 ```
@@ -375,7 +375,7 @@ PM 恢复执行时（新会话或上下文重置后）：
 2a. 写入 Handoff 文件:
 - 路径: deliverables/handoffs/{REQ-ID}-REQ1-R1.md
 - 白名单: agents/ba.md, deliverables/proposal.md, reference/ 下具体文件列表
-- 输出: deliverables/sa/requirement-spec.md
+- 输出: deliverables/ba/requirement-spec.md
 
 2b. 更新 .state.md: current_role=BA, current_step=REQ-1, current_handoff={文件名}
 
@@ -386,7 +386,7 @@ PM 恢复执行时（新会话或上下文重置后）：
 任务类型: 需求分析
 Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ1-R1.md
 输入物: deliverables/proposal.md, reference/*
-输出物: deliverables/sa/requirement-spec.md
+输出物: deliverables/ba/requirement-spec.md
 参考: skills/pdt-propose.md Step REQ-1
 ```
 
@@ -400,7 +400,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ1-R1.md
 
 3a. 写入 Handoff 文件:
 - 路径: deliverables/handoffs/{REQ-ID}-REQ2-R1.md
-- 白名单: agents/sa.md, deliverables/sa/requirement-spec.md
+- 白名单: agents/sa.md, deliverables/ba/requirement-spec.md
 - 输出: deliverables/sa/design.md
 
 3b. 更新 .state.md: current_role=SA, current_step=REQ-2
@@ -411,7 +411,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ1-R1.md
 目标角色: SA
 任务类型: 架构设计
 Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ2-R1.md
-输入物: deliverables/sa/requirement-spec.md
+输入物: deliverables/ba/requirement-spec.md
 输出物: deliverables/sa/design.md
 参考: skills/pdt-propose.md Step REQ-2
 ```
@@ -425,7 +425,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ2-R1.md
 
 4a. 写入 Handoff 文件:
 - 路径: deliverables/handoffs/{REQ-ID}-REQ3-R1.md
-- 白名单: agents/te.md, deliverables/sa/requirement-spec.md, deliverables/sa/design.md
+- 白名单: agents/te.md, deliverables/ba/requirement-spec.md, deliverables/sa/design.md
 - 输出: deliverables/te/testcases.md
 
 4b. 更新 .state.md: current_role=TE, current_step=REQ-3
@@ -436,7 +436,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ2-R1.md
 目标角色: TE
 任务类型: 测试用例设计
 Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ3-R1.md
-输入物: deliverables/sa/requirement-spec.md, deliverables/sa/design.md
+输入物: deliverables/ba/requirement-spec.md, deliverables/sa/design.md
 输出物: deliverables/te/testcases.md
 参考: skills/pdt-propose.md Step REQ-3
 ```
@@ -471,7 +471,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ3-R1.md
   - 技术设计方案（架构 + Tasks 清单）
   - 测试用例（E2E/回归/工程三类）
   - verify.sh B 级检查结果
-相关产物: deliverables/sa/requirement-spec.md, deliverables/sa/design.md, deliverables/te/testcases.md
+相关产物: deliverables/ba/requirement-spec.md, deliverables/sa/design.md, deliverables/te/testcases.md
 请确认: 通过 / 驳回（请说明原因）
 ```
 
@@ -487,7 +487,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-REQ3-R1.md
 [/pdt-propose 完成]
 需求编号: {REQ-ID}
 产物:
-  - deliverables/sa/requirement-spec.md
+  - deliverables/ba/requirement-spec.md
   - deliverables/sa/design.md
   - deliverables/te/testcases.md
   - deliverables/plan-action.md
@@ -597,7 +597,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-DEV1-T{N}-R1.md
 
 3a. 写入 Handoff 文件:
 - 路径: deliverables/handoffs/{REQ-ID}-TEST1-T{N}-R1.md
-- 白名单: agents/te.md, deliverables/output/{产出}, deliverables/sa/requirement-spec.md, deliverables/te/testcases.md
+- 白名单: agents/te.md, deliverables/output/{产出}, deliverables/ba/requirement-spec.md, deliverables/te/testcases.md
 - 输出: deliverables/te/temp-test-report.md
 
 3b. 更新 .state.md: current_role=TE
@@ -686,7 +686,7 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-TEST1-T{N}-R1.md
 
 5a. 写入 Handoff 文件:
 - 路径: deliverables/handoffs/{REQ-ID}-TEST2-R1.md
-- 白名单: agents/te.md, deliverables/output/ 下所有产出, deliverables/sa/requirement-spec.md, deliverables/te/testcases.md
+- 白名单: agents/te.md, deliverables/output/ 下所有产出, deliverables/ba/requirement-spec.md, deliverables/te/testcases.md
 - 输出: deliverables/te/final-test-report.md
 
 5b. 发出调度指令:
@@ -762,9 +762,9 @@ Handoff 文件: deliverables/handoffs/{REQ-ID}-TEST2-R1.md
 
 `[PM] 启动 ARC-1 需求归档`
 
-- **首次模式：** cp deliverables/sa/requirement-spec.md → spec/requirement-spec.md
+- **首次模式：** cp deliverables/ba/requirement-spec.md → spec/requirement-spec.md
 - **变更模式：**
-  - 将 deliverables/sa/requirement-spec.md 中的变更内容 merge 到 spec/requirement-spec.md
+  - 将 deliverables/ba/requirement-spec.md 中的变更内容 merge 到 spec/requirement-spec.md
   - 保留原有内容，追加/修改变更部分
   - 标注变更来源 REQ-ID
 - 自检：文件存在 + 非空

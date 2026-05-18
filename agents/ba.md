@@ -19,7 +19,7 @@
 
 ## 输出
 
-- deliverables/sa/requirement-spec.md
+- deliverables/ba/requirement-spec.md
 
 ## 阻塞条件
 

@@ -18,7 +18,7 @@
 
 - handoff 白名单指定的文件（通常包括）：
   - deliverables/output/（被测代码）
-  - deliverables/sa/requirement-spec.md（验收标准）
+  - deliverables/ba/requirement-spec.md（验收标准）
   - deliverables/sa/design.md（技术约束）
 
 ## 输出
