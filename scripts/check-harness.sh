@@ -44,7 +44,7 @@ done
 # 3. Skill 文件
 echo ""
 echo "--- Skill 文件 ---"
-skills=(pdt-init pdt-propose pdt-apply pdt-archive)
+skills=(pdt-init pdt-propose pdt-apply pdt-archive pdt-run)
 for skill in "${skills[@]}"; do
     f="skills/$skill.md"
     if [ -s "$f" ]; then
@@ -93,13 +93,9 @@ dirs=(
     "agents"
     "skills"
     "scripts"
+    "templates"
     "reference"
     "deliverables"
-    "deliverables/handoffs"
-    "deliverables/sa"
-    "deliverables/te"
-    "deliverables/de"
-    "deliverables/output"
     "spec"
     "output/final"
 )
@@ -115,7 +111,7 @@ done
 # 7. Handoff 模板
 echo ""
 echo "--- 模板文件 ---"
-if [ -s "deliverables/handoffs/.handoff-template.md" ]; then
+if [ -s "templates/handoff-template.md" ]; then
     echo "PASS: handoff 模板"
 else
     echo "FAIL: handoff 模板缺失"

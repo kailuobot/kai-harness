@@ -117,11 +117,11 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 | 步骤ID | 活动名称     | 执行角色 | 上游输入                                                     | 交付输出                                                     |
 | ------ | ------------ | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| REQ-1  | 需求分析     | BA       | `reference/`<br>`deliverables/proposal.md`                   | `deliverables/ba/requirement-spec.md`                        |
-| REQ-2  | 架构设计     | SA       | `deliverables/ba/requirement-spec.md`                        | `deliverables/sa/design.md`                                  |
-| REQ-3  | 测试用例设计 | TE       | `deliverables/ba/requirement-spec.md`                        | `deliverables/te/testcases.md`                               |
-| REQ-4  | 计划编排     | PM       | `deliverables/sa/`<br>`deliverables/te/`                     | `deliverables/plan-action.md`                                |
-| SR1    | **需求评审** | PM       | `deliverables/sa/`<br>`deliverables/te/`<br/>`deliverables/ba/` | `deliverables/SR1-record.md`<br>`deliverables/baselines/requirement-spec.v1.md`<br>`deliverables/baselines/design.v1.md`<br>`deliverables/baselines/testcases.v1.md` |
+| REQ-1  | 需求分析     | BA       | `reference/`<br>`deliverables/{REQ-ID}/proposal.md`                   | `deliverables/{REQ-ID}/ba/requirement-spec.md`                        |
+| REQ-2  | 架构设计     | SA       | `deliverables/{REQ-ID}/ba/requirement-spec.md`                        | `deliverables/{REQ-ID}/sa/design.md`                                  |
+| REQ-3  | 测试用例设计 | TE       | `deliverables/{REQ-ID}/ba/requirement-spec.md`                        | `deliverables/{REQ-ID}/te/testcases.md`                               |
+| REQ-4  | 计划编排     | PM       | `deliverables/{REQ-ID}/sa/`<br>`deliverables/{REQ-ID}/te/`                     | `deliverables/{REQ-ID}/plan-action.md`                                |
+| SR1    | **需求评审** | PM       | `deliverables/{REQ-ID}/sa/`<br>`deliverables/{REQ-ID}/te/`<br/>`deliverables/{REQ-ID}/ba/` | `deliverables/{REQ-ID}/SR1-record.md`<br>`deliverables/{REQ-ID}/baselines/*.v1.md` |
 
 ---
 
@@ -131,11 +131,11 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 | 步骤ID | 活动名称     | 执行角色           | 上游输入                                                     | 交付输出                                                     |
 | ------ | ------------ | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| DEV-1  | 编码实现     | DE                 | `deliverables/sa/design.md`                                  | `deliverables/output/`<br/>`deliverables/de/code-report.md` |
-| TEST-1 | 审计验证     | TE                 | `deliverables/output/`                         | `deliverables/te/temp-test-report.md`                        |
-| SR2    | **功能评审** | PM（人机交互决策） | `deliverables/output/`<br>`deliverables/te/temp-test-report.md` | `deliverables/SR2-record.md`                                 |
-| TEST-2 | 审计验证     | TE                 | `deliverables/output/`                         | `deliverables/te/final-test-report.md`                       |
-| SR3    | **功能评审** | PM（人机交互决策） | `deliverables/output/`<br>`deliverables/te/final-test-report.md` | `deliverables/SR3-record.md`                                 |
+| DEV-1  | 编码实现     | DE                 | `deliverables/{REQ-ID}/sa/design.md`                                  | `deliverables/{REQ-ID}/output/`<br/>`deliverables/{REQ-ID}/de/code-report.md` |
+| TEST-1 | 审计验证     | TE                 | `deliverables/{REQ-ID}/output/`                         | `deliverables/{REQ-ID}/te/temp-test-report.md`                        |
+| SR2    | **功能评审** | PM（人机交互决策） | `deliverables/{REQ-ID}/output/`<br>`deliverables/{REQ-ID}/te/temp-test-report.md` | `deliverables/{REQ-ID}/SR2-record.md`                                 |
+| TEST-2 | 审计验证     | TE                 | `deliverables/{REQ-ID}/output/`                         | `deliverables/{REQ-ID}/te/final-test-report.md`                       |
+| SR3    | **功能评审** | PM（人机交互决策） | `deliverables/{REQ-ID}/output/`<br>`deliverables/{REQ-ID}/te/final-test-report.md` | `deliverables/{REQ-ID}/SR3-record.md`                                 |
 
 ---
 
@@ -143,9 +143,9 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 | 步骤ID | 活动名称         | 执行角色           | 上游输入                              | 交付输出                   |
 | ------ | ---------------- | ------------------ | ------------------------------------- | -------------------------- |
-| ARC-1  | 需求归档         | PM                 | `deliverables/ba/requirement-spec.md` | `spec/requirement-spec.md` |
-| ARC-2  | 设计归档         | PM                 | `deliverables/sa/design.md`           | `spec/design.md`           |
-| ARC-3  | 代码归档         | PM                 | `deliverables/output/`        | `output/final/`          |
+| ARC-1  | 需求归档         | PM                 | `deliverables/{REQ-ID}/ba/requirement-spec.md` | `spec/requirement-spec.md` |
+| ARC-2  | 设计归档         | PM                 | `deliverables/{REQ-ID}/sa/design.md`           | `spec/design.md`           |
+| ARC-3  | 代码归档         | PM                 | `deliverables/{REQ-ID}/output/`        | `output/final/`          |
 | SR4    | **项目结项确认** | PM（人机交互决策） |                                       |                            |
 
 ---

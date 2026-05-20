@@ -2,7 +2,7 @@
 
 需求初始化与澄清。PM 主导，人机协作打磨 Proposal。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
 
 ---
 
@@ -16,6 +16,17 @@
    - **NEW**: 以上均不满足 → 全新项目
 
 ⚠️ 关键：phase=done 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
+
+## 环境预检
+
+1. 检测 Node.js 版本（要求 18+）：`node --version`
+2. 检测 Playwright/浏览器可用性:
+   - 执行 `npx playwright --version 2>/dev/null` 或检查 node_modules/.bin/playwright
+   - 如可用: 记录 `env.browser_available: true` 到 .state.md
+   - 如不可用: 记录 `env.browser_available: false`，打印警告:
+     `[PM] ⚠ Playwright 未安装，E2E 测试将降级为工程验证 + 注释标注`
+3. 检测项目测试框架（package.json scripts.test）
+4. 将环境信息写入 `deliverables/{REQ-ID}/.state.md` 的 env 字段
 
 ## Step 1: 初始化任务目录
 
@@ -41,6 +52,9 @@
    phase: init
    current_step: INIT-1
    current_role: PM
+   last_updated: "{timestamp}"
+   env:
+     browser_available: {true|false}
    ```
 4. `[PM] 初始化完成，进入需求澄清`
 

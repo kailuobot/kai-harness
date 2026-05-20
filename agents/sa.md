@@ -15,11 +15,14 @@
 ## 输入
 
 - handoff 白名单指定的文件（通常包括）：
-  - deliverables/ba/requirement-spec.md
+  - deliverables/{REQ-ID}/ba/requirement-spec.md（full 模式）
+  - deliverables/{REQ-ID}/proposal.md（standard 模式）
+
+> 以下路径均相对于 `deliverables/{REQ-ID}/`，由 handoff 白名单精确指定。
 
 ## 输出
 
-- deliverables/sa/design.md
+- deliverables/{REQ-ID}/sa/design.md
 
 ## 阻塞条件
 
@@ -45,6 +48,12 @@
 ## 2. 需求-技术对照表
 | 需求ID | 需求描述 | 技术实现 | 验证方式 |
 |--------|---------|---------|---------|
+
+## 2b. 需求映射简表（standard 模式必填）
+
+当无 BA 产出 requirement-spec.md 时，SA 需补充:
+| Proposal 要点 | 对应 Task | 验证方式 |
+|--------------|-----------|---------|
 
 ## 3. 时序图
 {Mermaid 或文本时序图}

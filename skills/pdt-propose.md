@@ -2,7 +2,7 @@
 
 需求分析 → 架构设计 → 测试用例 → 计划编排 → 人工评审。按 mode 裁剪步骤。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
 
 ---
 
@@ -44,7 +44,7 @@
    - to: SA
    - 白名单: `deliverables/{REQ-ID}/proposal.md`
    - 期望输出: `deliverables/{REQ-ID}/sa/design.md`
-   - 约束: 简版设计（架构 + Tasks清单，无需时序图）
+   - 约束: 简版设计（架构 + Tasks清单 + 需求映射简表，无需时序图）。因 standard 模式跳过 BA，SA 需在 design.md 中补充 Proposal 要点→Task→验证方式 的映射表
 3. 更新 `deliverables/{REQ-ID}/.state.md`: current_step=REQ-2
 4. 派发任务:
    - [Claude Code] spawn SubAgent，注入 handoff + agents/sa.md + 白名单文件

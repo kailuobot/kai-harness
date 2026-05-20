@@ -2,7 +2,7 @@
 
 开发实现 → 审计验证 → 人工审批。按 mode 裁剪步骤。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{时间}] [{角色}] {事件描述}`
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
 
 ---
 
@@ -97,7 +97,8 @@ END FOR
 3. 派发任务给 DE
 4. DE 完成后，派发 TE 审计:
    - 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
-   - TE 执行完整审计（含 E2E）
+   - 如 .state.md 中 `env.browser_available=true`: TE 执行完整审计（含 E2E）
+   - 如 .state.md 中 `env.browser_available=false`: TE 执行工程验证，跳过 E2E，报告中标注 `[E2E DEGRADED - 环境不可用]`
 5. 审计结果:
    - PASS → 人工确认该任务 → 记入 completed_steps → 下一个 Task
    - FAIL → 修复循环（最多5轮）

@@ -28,6 +28,30 @@
 
 ---
 
+## Fast 模式特殊行为：连续流
+
+当 mode=fast 时，/pdt-run 将 propose→apply→archive 合并为一个连续流，最大限度减少人工交互：
+
+**整个 fast 连续流中，用户仅需在以下时刻做出决策：**
+- Init 阶段的 Proposal 确认 + 模式选择
+- Apply 阶段的人工确认（唯一审批点，合并了 SR2/SR3/SR4 的职能）
+
+**被跳过的暂停点：**
+- SR1（fast 模式无此节点）
+- SR4（fast 模式直接结项）
+- 阶段间等待（propose→apply→archive 全部自动衔接）
+
+**推进触发条件覆盖（fast 模式）：**
+
+| 当前阶段完成标记 | 推进动作 |
+|---|---|
+| current_step=INIT-DONE | 自动推进 → propose（无暂停） |
+| current_step=PROPOSE-DONE | 自动推进 → apply（无暂停，跳过 SR1） |
+| Apply 人工确认通过 | 自动推进 → archive（无暂停，跳过 SR4） |
+| phase=done | 打印最终摘要 |
+
+---
+
 ## 被覆盖的行为
 
 执行各阶段 skill 时，以下结束语被替换为自动推进：

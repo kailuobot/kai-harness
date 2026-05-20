@@ -3,21 +3,9 @@
 
 # deliverables/ 过程产物（按 REQ-ID 隔离）
 deliverables/REQ*/
-deliverables/sa/
-deliverables/te/
-deliverables/de/
-deliverables/output/
-deliverables/baselines/
-deliverables/proposal.md
-deliverables/plan-action.md
-deliverables/SR*-record.md
-deliverables/process.log
 
-# 保留全局指针和模板
+# 保留全局指针
 !deliverables/.state.md
-!deliverables/handoffs/
-deliverables/handoffs/*
-!deliverables/handoffs/.handoff-template.md
 
 # spec/ 用户归档产物（框架仓库不含用户数据）
 spec/*.md
@@ -25,6 +13,19 @@ spec/baselines/
 
 # output 产物
 output/final/
+
+# MCP 服务器自动生成目录（zai-mcp-server）
+android-*/
+analytics/
+cache/
+codegen/
+collaboration/
+custom-templates/
+learning/
+memory/
+predictive/
+prompt-library/
+swarm/
 
 # 系统文件
 .DS_Store

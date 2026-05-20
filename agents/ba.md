@@ -15,11 +15,13 @@
 
 - handoff 白名单指定的文件（通常包括）：
   - reference/ 下的参考资料
-  - deliverables/proposal.md
+  - deliverables/{REQ-ID}/proposal.md
+
+> 以下路径均相对于 `deliverables/{REQ-ID}/`，由 handoff 白名单精确指定。
 
 ## 输出
 
-- deliverables/ba/requirement-spec.md
+- deliverables/{REQ-ID}/ba/requirement-spec.md
 
 ## 阻塞条件
 

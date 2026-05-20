@@ -15,13 +15,15 @@
 ## 输入
 
 - handoff 白名单指定的文件（通常包括）：
-  - deliverables/sa/design.md（或其中指定的 Task）
+  - deliverables/{REQ-ID}/sa/design.md（或其中指定的 Task）
   - 已有代码（如果是迭代修复）
+
+> 以下路径均相对于 `deliverables/{REQ-ID}/`，由 handoff 白名单精确指定。
 
 ## 输出
 
-- deliverables/output/（实现代码）
-- deliverables/de/code-report.md
+- deliverables/{REQ-ID}/output/（实现代码）
+- deliverables/{REQ-ID}/de/code-report.md
 
 ## 阻塞条件
 

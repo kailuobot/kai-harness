@@ -16,15 +16,16 @@
 ## 输入
 
 - deliverables/.state.md
-- deliverables/handoffs/*.md（状态检查）
+- deliverables/{REQ-ID}/.state.md
+- deliverables/{REQ-ID}/handoffs/*.md（状态检查）
 - 各角色交付的产出物（仅做存在性校验，不做内容判断）
 
 ## 输出
 
-- deliverables/handoffs/{handoff文件}
-- deliverables/.state.md（更新）
-- deliverables/plan-action.md（REQ-4 步骤）
-- deliverables/SR{N}-record.md（审批记录）
+- deliverables/{REQ-ID}/handoffs/{handoff文件}（使用 templates/handoff-template.md 格式）
+- deliverables/{REQ-ID}/.state.md（更新）
+- deliverables/{REQ-ID}/plan-action.md（REQ-4 步骤）
+- deliverables/{REQ-ID}/SR{N}-record.md（审批记录）
 
 ## 阻塞条件
 

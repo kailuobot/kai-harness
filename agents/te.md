@@ -8,7 +8,7 @@
 
 1. 读取 handoff 白名单中的产出物和需求规格
 2. 执行三类测试：
-   - 浏览器 E2E 测试（必须使用真实浏览器）
+   - 浏览器 E2E 测试（优先使用真实浏览器；环境不可用时降级为工程验证并标注）
    - 回归测试（确保已有功能未被破坏）
    - 工程验证（代码规范、构建、lint）
 3. 生成测试报告
@@ -17,21 +17,22 @@
 ## 输入
 
 - handoff 白名单指定的文件（通常包括）：
-  - deliverables/output/（被测代码）
-  - deliverables/ba/requirement-spec.md（验收标准）
-  - deliverables/sa/design.md（技术约束）
+  - deliverables/{REQ-ID}/output/（被测代码）
+  - deliverables/{REQ-ID}/ba/requirement-spec.md（验收标准，full 模式）
+  - deliverables/{REQ-ID}/sa/design.md（技术约束）
+
+> 以下路径均相对于 `deliverables/{REQ-ID}/`，由 handoff 白名单精确指定。
 
 ## 输出
 
-- deliverables/te/testcases.md（propose 阶段）
-- deliverables/te/temp-test-report.md（apply 阶段 TEST-1）
-- deliverables/te/final-test-report.md（apply 阶段 TEST-2）
+- deliverables/{REQ-ID}/te/testcases.md（propose 阶段）
+- deliverables/{REQ-ID}/te/temp-test-report.md（apply 阶段 TEST-1）
+- deliverables/{REQ-ID}/te/final-test-report.md（apply 阶段 TEST-2）
 
 ## 阻塞条件
 
 - handoff 文件不存在或 status 非 pending
 - 被测产出物缺失或为空
-- 浏览器环境不可用（E2E 测试）
 
 ## 禁止事项
 
@@ -40,7 +41,7 @@
 - 禁止调度其他角色
 - 禁止读取白名单外的文件
 - 禁止引用对话历史中其他角色的推理
-- 禁止跳过浏览器 E2E 测试
+- 优先使用真实浏览器执行 E2E 测试；如环境不可用（.state.md env.browser_available=false），降级为工程验证并在报告中标注 `[E2E DEGRADED]`
 - 禁止将测试结果标记为 PASS 当存在未解决的失败项
 
 ## 测试用例格式

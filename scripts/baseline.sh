@@ -2,6 +2,7 @@
 # baseline.sh - 基线对比脚本
 # 对比当前产出物与已归档基线，检测是否有未经流程的修改
 # 退出码: 0=一致, 1=存在差异
+# 用法: ./scripts/baseline.sh [REQ-ID]
 
 set -euo pipefail
 
@@ -10,7 +11,19 @@ BASELINES_DIR="spec/baselines"
 DELIVERABLES_DIR="deliverables"
 ERRORS=0
 
+req_id="${1:-}"
+
+# 自动从 .state.md 读取 REQ-ID
+if [ -z "$req_id" ]; then
+    req_id=$(grep "^req_id:" "$DELIVERABLES_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+fi
+
+REQ_DIR="$DELIVERABLES_DIR/$req_id"
+
 echo "=== 基线对比检查 ==="
+if [ -n "$req_id" ]; then
+    echo "INFO: REQ-ID=$req_id"
+fi
 
 # 检查 spec/ 是否有内容可对比
 if [ ! -d "$SPEC_DIR" ] || [ -z "$(ls -A "$SPEC_DIR" 2>/dev/null | grep -v baselines)" ]; then
@@ -68,12 +81,12 @@ done
 echo ""
 echo "=== 产出物归档一致性 ==="
 
-if [ -d "output/final" ] && [ -d "$DELIVERABLES_DIR/output" ]; then
-    # 检查 output/final 中的文件是否都能在 deliverables/output 中找到来源
+if [ -d "output/final" ] && [ -n "$req_id" ] && [ -d "$REQ_DIR/output" ]; then
+    # 检查 output/final 中的文件是否都能在 deliverables/{REQ-ID}/output 中找到来源
     local_errors=0
     for final_file in $(find "output/final" -type f 2>/dev/null); do
         relative="${final_file#output/final/}"
-        source_file="$DELIVERABLES_DIR/output/$relative"
+        source_file="$REQ_DIR/output/$relative"
         if [ ! -f "$source_file" ]; then
             echo "WARN: output/final/$relative 无对应源文件"
             local_errors=$((local_errors + 1))

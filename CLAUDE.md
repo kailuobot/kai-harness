@@ -1,4 +1,30 @@
-# 全局纪律（Rules）
+# Mini-Harness 全局纪律
+
+> AI Agent 驱动的研发流程框架。四层防线：Rules → Skills → Agents+Workflow → Scripts+人工。
+
+## 角色
+
+| 角色 | 职责 | 定义文件 |
+|------|------|---------|
+| PM | 调度、检查、人机交互 | agents/pm.md |
+| BA | 需求分析 | agents/ba.md |
+| SA | 架构设计 | agents/sa.md |
+| DE | 编码实现 | agents/de.md |
+| TE | 审计验证 | agents/te.md |
+
+## 命令
+
+| 命令 | 作用 | Skill 文件 |
+|------|------|-----------|
+| /pdt-init | 需求初始化与澄清 | skills/pdt-init.md |
+| /pdt-propose | 分析→设计→用例→评审 | skills/pdt-propose.md |
+| /pdt-apply | 开发→审计→人工审批 | skills/pdt-apply.md |
+| /pdt-archive | 归档+结项 | skills/pdt-archive.md |
+| /pdt-run | 全流程自动推进 | skills/pdt-run.md |
+
+---
+
+# Rules（全局纪律）
 
 本文件是所有 Agent 角色的最高约束，任何 Skill 或 Agent 定义不得与此冲突。
 
@@ -30,13 +56,15 @@
 
 - 任何文件写入后必须验证文件存在且非空
 - DE 编码后必须执行 dev-test skill
-- TE 审计必须使用真实浏览器执行 E2E 测试
+- TE 审计优先使用真实浏览器执行 E2E 测试；环境不可用时降级并标注
 - 交付判定依赖脚本退出码，不依赖 Agent 自述
 
 ## 5. 断点恢复
 
 - PM 恢复时仅依据 .state.md 和 handoff 文件状态，禁止依赖对话历史
 - .state.md 是流程状态的唯一真相源
+- 每次更新 .state.md 必须同步更新 last_updated 时间戳
+- 恢复时如 handoff 为 pending 且 last_updated 超过 30 分钟，自动重新派发
 
 ## 6. 平台适配
 
