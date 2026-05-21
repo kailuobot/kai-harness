@@ -44,7 +44,7 @@ done
 # 3. Skill 文件
 echo ""
 echo "--- Skill 文件 ---"
-skills=(pdt-init pdt-propose pdt-apply pdt-archive pdt-run)
+skills=(pdt-init pdt-propose pdt-apply pdt-archive pdt-run ppt-dev)
 for skill in "${skills[@]}"; do
     f="skills/$skill.md"
     if [ -s "$f" ]; then
@@ -115,6 +115,32 @@ if [ -s "templates/handoff-template.md" ]; then
     echo "PASS: handoff 模板"
 else
     echo "FAIL: handoff 模板缺失"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# 8. PPT 子系统
+echo ""
+echo "--- PPT 子系统 ---"
+ppt_files=(
+    "agents/ux.md"
+    "templates/ppt-base.css"
+    "templates/ppt-base.html"
+    "scripts/verify-ppt.sh"
+)
+for f in "${ppt_files[@]}"; do
+    if [ -s "$f" ]; then
+        echo "PASS: $f"
+    else
+        echo "FAIL: $f 缺失或为空"
+        ERRORS=$((ERRORS + 1))
+    fi
+done
+
+if [ -d "templates/ppt-templates/layouts" ]; then
+    local_count=$(find "templates/ppt-templates/layouts" -name "*.html" | wc -l | tr -d ' ')
+    echo "PASS: templates/ppt-templates/layouts/ ($local_count 个模板)"
+else
+    echo "FAIL: templates/ppt-templates/layouts/ 不存在"
     ERRORS=$((ERRORS + 1))
 fi
 

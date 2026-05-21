@@ -344,3 +344,47 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 - **新增流程阶段**: 新增 skill 文件 + .claude/commands/ 引用
 - **接入外部 Agent 框架**: Handoff 协议天然兼容（如 Anthropic Agent SDK）
 - **自定义校验**: 在 scripts/ 下新增脚本，在 skill 中引用
+
+---
+
+## 14. PPT 子系统
+
+独立的 PPT 类 HTML 页面开发能力，通过 `/ppt-dev` 触发，与常规开发流程完全隔离。
+
+### 14.1 架构
+
+```
+/ppt-dev 触发 → 独立流程（不经过 pdt-init/propose/apply/archive）
+  UX 角色: 版式设计（高保真 wireframe）
+  DE 角色: 精装实现（真实数据 + 图表 + 交互）
+  TE 角色: verify-ppt.sh 硬校验
+```
+
+### 14.2 UX 角色
+
+| 项目 | 说明 |
+|------|------|
+| 定义文件 | agents/ux.md |
+| 职责 | 逐页版式设计，产出高保真 HTML wireframe |
+| 输出 | ux/slide-spec.md + ux/wireframes/slide-{NN}.html |
+| 约束 | 基于 ppt-base.css，禁止覆盖全局变量，禁止技术决策 |
+
+### 14.3 模板体系
+
+- 基础样式: `templates/ppt-base.css`（16:9 约束 + 深色配色 + 组件类）
+- 骨架模板: `templates/ppt-base.html`
+- 版式库: `templates/ppt-templates/layouts/L{NN}-{name}.html`（12 套高密度版式）
+
+### 14.4 设计规范
+
+- 视口: 1920×1080（16:9）
+- 配色: 深色暖调（背景 #1A1614，主强调 #E8845F）
+- 信息密度: 高密度优先，每页承载传统 PPT 2-3 页信息量
+- 字号: 标题 26px，正文 15px，标注 12px
+
+### 14.5 上下文隔离
+
+- 不修改任何现有 skill（pdt-*.md）
+- 不修改任何现有 agent（pm/ba/sa/de/te.md）
+- PPT 相关内容仅在 /ppt-dev 调用时加载
+- 正常开发流程零污染

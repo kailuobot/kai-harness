@@ -21,6 +21,7 @@
 | /pdt-apply | 开发→审计→人工审批 | skills/pdt-apply.md |
 | /pdt-archive | 归档+结项 | skills/pdt-archive.md |
 | /pdt-run | 全流程自动推进 | skills/pdt-run.md |
+| /ppt-dev | PPT 类 HTML 页面开发 | skills/ppt-dev.md |
 
 ---
 
