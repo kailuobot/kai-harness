@@ -243,13 +243,13 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 | `/pdt-apply` | 前置检查 → DE开发 → TE审计 → 逐任务人工检查 → SR2 → 合并 → SR3 |
 | `/pdt-archive` | 前置检查 → 产物归档（首次copy/变更merge）→ 用户确认结项 |
 
-### MCP 工具集
+### 内置工具
 
-| 服务 | 用途 | 调用时机 |
+| 工具 | 用途 | 调用时机 |
 |------|------|---------|
-| zai-mcp-server | 图片内容识别 | reference/ 含图片时 |
-| web-search | 联网搜索补充资料 | SA 研究阶段 |
-| web-reader | 网页内容抓取 | 用户提供参考链接时 |
+| WebSearch | 联网搜索补充资料 | SA 研究阶段 |
+| WebFetch | 网页内容抓取 | 用户提供参考链接时 |
+| Read | 图片内容识别 | reference/ 含图片时 |
 
 
 ---
