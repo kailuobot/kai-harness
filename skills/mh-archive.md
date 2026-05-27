@@ -54,7 +54,7 @@
 
 | output_type | 归档源 | 归档目标 | 额外归档 |
 |-------------|--------|---------|---------|
-| ppt | output/ | output/final/ | designer/wireframes/ → output/final/wireframes/ |
+| ppt | output/ | output/final/ | ux/wireframes/ → output/final/wireframes/ |
 | web-app | output/ | output/final/ | — |
 | backend-api | output/ | output/final/ | — |
 | cli-tool | output/ | output/final/ | — |

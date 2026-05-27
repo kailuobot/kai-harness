@@ -72,7 +72,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 交付链的最终验收环节。根据 test_strategy 选择验证方法（E2E/单元/集成/冒烟/人工/工程验证），确保产出物符合需求规格。
 
-#### Designer -- 设计师
+#### UX -- 设计师
 
 产出物的视觉/结构设计师。根据 output_type 产出不同设计制品（PPT wireframe / UI 设计 / API 设计文档等）。
 

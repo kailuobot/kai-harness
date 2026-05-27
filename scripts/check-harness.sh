@@ -30,7 +30,7 @@ done
 # 2. Agent 定义文件
 echo ""
 echo "--- Agent 定义 ---"
-agents=(pm ba sa de te designer)
+agents=(pm ba sa de te ux)
 for agent in "${agents[@]}"; do
     f="agents/$agent.md"
     if [ -s "$f" ]; then
@@ -123,7 +123,7 @@ fi
 echo ""
 echo "--- PPT 子系统 ---"
 ppt_files=(
-    "agents/designer.md"
+    "agents/ux.md"
     "templates/ppt-base.css"
     "templates/ppt-base.html"
     "scripts/verify-ppt.sh"

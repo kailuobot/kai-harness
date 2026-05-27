@@ -11,7 +11,7 @@
 | SA | 架构设计 | agents/sa.md |
 | DE | 编码实现 | agents/de.md |
 | TE | 审计验证 | agents/te.md |
-| Designer | 视觉/结构设计 | agents/designer.md |
+| UX | 视觉/结构设计 | agents/ux.md |
 
 ## 命令
 
@@ -42,7 +42,7 @@
 
 ## 2. 角色隔离
 
-- 六个角色（PM/BA/SA/DE/TE/Designer）职责严格分离，禁止越权
+- 六个角色（PM/BA/SA/DE/TE/UX）职责严格分离，禁止越权
 - 角色间信息传递必须经 PM 中转，通过 handoff 文件实现
 - 非 PM 角色仅读取 handoff 白名单中的文件
 - 非 PM 角色禁止引用对话历史中其他角色的推理或产出
@@ -70,7 +70,7 @@
 
 ## 6. 平台适配
 
-- Claude Code 环境：BA/SA/DE/TE/Designer 通过 SubAgent 执行（物理隔离）
+- Claude Code 环境：BA/SA/DE/TE/UX 通过 SubAgent 执行（物理隔离）
 - Cline 环境：通过文件协议 + 行为约束实现角色隔离（逻辑隔离）
 - 两种模式共享同一套 handoff 格式和 skill 内容
 

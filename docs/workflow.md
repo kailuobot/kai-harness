@@ -283,7 +283,7 @@ PM 恢复执行时（新会话或上下文重置后）：
 | apply | skills/mh-apply.md | DE开发 → TE审计（test_strategy 驱动）→ 修复循环 → SR2 → SR3（按 mode 裁剪） |
 | archive | skills/mh-archive.md | 需求归档 → 设计归档 → 产出物归档（output_type 感知）→ SR4（含 merge 策略） |
 | run | skills/mh-run.md | 全流程自动推进（含 fast 连续流） |
-| ppt | skills/mh-ppt.md | output_type=ppt 补充规则（Designer wireframe + verify-ppt.sh） |
+| ppt | skills/mh-ppt.md | output_type=ppt 补充规则（UX wireframe + verify-ppt.sh） |
 
 > Skills 文件是 Agent 的唯一执行依据。本文档仅作为人类阅读的流程参考。
 

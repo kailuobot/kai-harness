@@ -143,7 +143,7 @@ check_b() {
         # output_type-specific checks
         case "$output_type" in
             ppt)
-                if [ ! -s "$REQ_DIR/designer/slide-spec.md" ] && [ ! -s "$REQ_DIR/ux/slide-spec.md" ]; then
+                if [ ! -s "$REQ_DIR/ux/slide-spec.md" ]; then
                     echo "FAIL: slide-spec.md 缺失（output_type=ppt）"
                     ERRORS=$((ERRORS + 1))
                 else

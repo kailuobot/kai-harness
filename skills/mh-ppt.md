@@ -21,15 +21,15 @@ PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 outp
 | 阶段 | 集成行为 |
 |------|---------|
 | clarify | 自动设置 output_type=ppt, test_strategy=manual |
-| propose | SA 方案后追加 Designer wireframe 步骤 + 用户审批 wireframe |
+| propose | SA 方案后追加 UX wireframe 步骤 + 用户审批 wireframe |
 | apply | DE 基于 wireframe 实现，TE 使用 verify-ppt.sh 校验 |
-| archive | 额外归档 designer/wireframes/ → output/final/wireframes/ |
+| archive | 额外归档 ux/wireframes/ → output/final/wireframes/ |
 
 ---
 
 ## 模式裁剪
 
-| 模式 | SA | Designer | 审批 | DE |
+| 模式 | SA | UX | 审批 | DE |
 |------|----|----|------|----|
 | fast | 跳过 | 直接从需求设计 | 1次人工确认 | 批量实现 |
 | standard | 简版方案 | 基于方案设计 | wireframe审批 + 完成确认 | 逐页实现 |
@@ -39,17 +39,17 @@ PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 outp
 
 ## PPT 特有步骤（propose 阶段追加）
 
-### Designer Wireframe 设计
+### UX Wireframe 设计
 
-1. `[PM] 派发 Designer wireframe 设计任务`
-2. 创建目录结构：`deliverables/{REQ-ID}/designer/wireframes/`
+1. `[PM] 派发 UX wireframe 设计任务`
+2. 创建目录结构：`deliverables/{REQ-ID}/ux/wireframes/`
 3. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DESIGN1-R1.md`
-   - to: Designer
+   - to: UX
    - 白名单: `deliverables/{REQ-ID}/proposal.md`, `deliverables/{REQ-ID}/sa/design.md`(如有), `templates/ppt-base.css`, `templates/ppt-templates/layouts/`
-   - 期望输出: `deliverables/{REQ-ID}/designer/slide-spec.md`, `deliverables/{REQ-ID}/designer/wireframes/`
-4. 派发任务给 Designer
+   - 期望输出: `deliverables/{REQ-ID}/ux/slide-spec.md`, `deliverables/{REQ-ID}/ux/wireframes/`
+4. 派发任务给 UX
 5. 接收回报，校验 wireframe 文件存在且非空
-6. `[PM] Designer 设计完成，共 {N} 页`
+6. `[PM] UX 设计完成，共 {N} 页`
 
 ### 用户审批 Wireframe
 
@@ -57,13 +57,13 @@ PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 outp
 2. 向用户呈现：
    ```
    [版式审批]
-   Wireframe 文件: deliverables/{REQ-ID}/designer/wireframes/
-   版式规格: deliverables/{REQ-ID}/designer/slide-spec.md
+   Wireframe 文件: deliverables/{REQ-ID}/ux/wireframes/
+   版式规格: deliverables/{REQ-ID}/ux/slide-spec.md
    请在浏览器中打开 wireframe HTML 文件预览。
    确认: 通过 / 修改（请说明哪页需要调整）
    ```
 3. 通过 → 继续 apply 阶段
-4. 修改 → 重新派发 Designer（轮次+1，附修改意见）
+4. 修改 → 重新派发 UX（轮次+1，附修改意见）
 
 ---
 
@@ -74,7 +74,7 @@ PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 outp
 1. `[PM] 派发 DE 实现任务`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-R1.md`
    - to: DE
-   - 白名单: `deliverables/{REQ-ID}/designer/wireframes/`, `deliverables/{REQ-ID}/designer/slide-spec.md`, `templates/ppt-base.css`
+   - 白名单: `deliverables/{REQ-ID}/ux/wireframes/`, `deliverables/{REQ-ID}/ux/slide-spec.md`, `templates/ppt-base.css`
    - 期望输出: `deliverables/{REQ-ID}/output/`
    - 约束: 基于 wireframe 精装实现，填充真实数据，接入图表库，保持 16:9 约束
 3. 派发任务给 DE
@@ -107,11 +107,6 @@ TE 使用 `scripts/verify-ppt.sh` 执行硬校验：
 
 ## 异常处理
 
-- Designer wireframe 审批驳回: 记录修改意见，重新派发 Designer
+- UX wireframe 审批驳回: 记录修改意见，重新派发 UX
 - DE 实现与 wireframe 不符: TE 标记差异，回退 DE
 - verify-ppt.sh 失败: 按失败项逐一修复
-
-## 兼容说明
-
-- 已有 handoff 中引用 UX 角色的仍然有效（Designer 角色兼容 UX 的所有 PPT 职责）
-- 已有 `deliverables/{REQ-ID}/ux/` 目录结构仍被识别（verify.sh 同时检查 designer/ 和 ux/）

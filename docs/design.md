@@ -159,7 +159,7 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │   ├── sa.md
 │   ├── de.md
 │   ├── te.md
-│   └── designer.md
+│   └── ux.md
 │
 ├── skills/                    # 第二层: Skills (SOP)
 │   ├── mh-clarify.md
@@ -201,7 +201,7 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │       ├── sa/                # SA 产出
 │       ├── te/                # TE 产出
 │       ├── de/                # DE 产出
-│       ├── designer/          # Designer 产出
+│       ├── ux/                # UX 产出
 │       ├── output/            # 开发产出物
 │       └── baselines/         # 基线快照
 ├── spec/                      # 用户项目归档规格
@@ -261,7 +261,7 @@ output_type 是框架的核心参数之一，与 mode 正交：
 
 ### 9.2 可选值与默认 test_strategy
 
-| output_type | 说明 | 默认 test_strategy | Designer 产出 |
+| output_type | 说明 | 默认 test_strategy | UX 产出 |
 |-------------|------|-------------------|--------------|
 | web-app | Web 应用（前端/全栈） | e2e / integration | UI wireframe |
 | backend-api | 后端服务/API | integration | API 设计文档 |
@@ -401,36 +401,46 @@ PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程�
 ```
 /mh-ppt 快捷触发 → 自动设置 output_type=ppt → 进入 /mh-run 主流程
   主流程集成点:
-    propose 阶段: SA 方案后追加 Designer wireframe 步骤
+    propose 阶段: SA 方案后追加 UX wireframe 步骤
     apply 阶段: DE 基于 wireframe 实现，TE 使用 verify-ppt.sh
-    archive 阶段: 额外归档 designer/wireframes/
+    archive 阶段: 额外归档 ux/wireframes/
 ```
 
-### 14.2 Designer 角色（PPT 模式）
+### 14.2 UX 角色（PPT 模式）
 
 | 项目 | 说明 |
 |------|------|
-| 定义文件 | agents/designer.md |
+| 定义文件 | agents/ux.md |
 | 职责 | 逐页版式设计，产出高保真 HTML wireframe |
-| 输出 | designer/slide-spec.md + designer/wireframes/slide-{NN}.html |
+| 输出 | ux/slide-spec.md + ux/wireframes/slide-{NN}.html |
 | 约束 | 基于 ppt-base.css，禁止覆盖全局变量，禁止技术决策 |
 
 ### 14.3 模板体系
 
-- 基础样式: `templates/ppt-base.css`（16:9 约束 + 深色配色 + 组件类）
+- 基础样式（深色暖调）: `templates/ppt-base.css`（16:9 约束 + 深色配色 + 组件类）
+- 基础样式（白底商务）: `templates/ppt-light.css`（16:9 约束 + 白底蓝橙配色 + 迷你图表组件）
 - 骨架模板: `templates/ppt-base.html`
-- 版式库: `templates/ppt-templates/layouts/L{NN}-{name}.html`（12 套高密度版式）
+- 版式库（深色）: `templates/ppt-templates/layouts/L{NN}-{name}.html`（12 套高密度版式）
+- 版式库（白底）: `templates/ppt-templates/layouts/W{NN}-{name}.html`（5 套高密度版式）
 
 ### 14.4 设计规范
 
+**通用约束：**
 - 视口: 1920×1080（16:9）
-- 配色: 深色暖调（背景 #1A1614，主强调 #E8845F）
 - 信息密度: 高密度优先，每页承载传统 PPT 2-3 页信息量
+
+**深色暖调主题（L 系列）：**
+- 配色: 深色暖调（背景 #1A1614，主强调 #E8845F）
 - 字号: 标题 26px，正文 15px，标注 12px
+
+**白底商务主题（W 系列）：**
+- 配色: 白底（背景 #FFFFFF，主强调 #2980F0，辅助 #FF7400）
+- 字号: 标题 24px，正文 14px，标注 11px
+- 特色: 纯 CSS 迷你图表（环形图/柱状图/进度条/趋势线）、紧凑卡片系统、蓝色竖条分区
 
 ### 14.5 与主流程的关系
 
 - /mh-ppt 是 output_type=ppt 的快捷入口，本质上走主流程
 - PPT 补充规则定义在 skills/mh-ppt.md，主流程在 output_type=ppt 时自动加载
-- Designer 角色仅在 output_type 需要设计制品时参与（由 PM 根据 output_type 决定）
+- UX 角色仅在 output_type 需要设计制品时参与（由 PM 根据 output_type 决定）
 - verify-ppt.sh 作为 PPT 特有的硬校验脚本，在 TE 审计时调用
