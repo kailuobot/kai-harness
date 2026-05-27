@@ -70,7 +70,11 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 #### TE -- 测试工程师
 
-交付链的最终验收环节。执行3类测试（浏览器E2E/回归/工程验证），浏览器E2E类测试必须使用真实浏览器。
+交付链的最终验收环节。根据 test_strategy 选择验证方法（E2E/单元/集成/冒烟/人工/工程验证），确保产出物符合需求规格。
+
+#### Designer -- 设计师
+
+产出物的视觉/结构设计师。根据 output_type 产出不同设计制品（PPT wireframe / UI 设计 / API 设计文档等）。
 
 #### Agent契约结构
 
@@ -80,21 +84,41 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 ## 3、研发流程：需求澄清 + 三段式接力 + 人工审批
 
-完整研发流程按触发命令划分为四个分段：init（人机协作打磨 Proposal）、propose（自动化需求→方案→评审）、apply（自动化开发→审查→测试→待归档）、archive（人工确认触发 Spec Merge + 归档）。
+完整研发流程按触发命令划分为四个分段：clarify（人机协作打磨 Proposal + 产出类型选择）、propose（自动化需求→方案→评审）、apply（自动化开发→审查→测试→待归档）、archive（人工确认触发 Spec Merge + 归档）。
 
 流程设有两道人工审批：SA方案设计和PM任务编排后、TE测试验证PASS后。每个阶段骨架如下：
 
-**/pdt-init**
+**/mh-clarify**
 `init-task.sh → 人机协作打磨 proposal.md → 消除歧义 + 定稿`
 
-**/pdt-propose**
+**/mh-propose**
 `BA 需求分析 → SA 方案设计 → PM 任务计划编排 → 人工审批 1`
 
-**/pdt-apply**
+**/mh-apply**
 `DE TDD 开发 → TE 审计验证 → 人工审批 2`
 
-**/pdt-archive**
+**/mh-archive**
 `✓ Spec Merge + mv 归档 + board DONE`
+
+---
+
+## 4、产出类型（output_type）
+
+框架支持任意类型的需求开发。在 clarify 阶段通过 output_type 参数指定产出物类型，后续流程自动适配：
+
+| output_type | 说明 | 默认验证策略 |
+|-------------|------|-------------|
+| web-app | Web 应用（前端/全栈） | E2E / 集成测试 |
+| backend-api | 后端服务/API | 集成测试 |
+| cli-tool | 命令行工具 | 集成测试 |
+| data-pipeline | 数据管道/ETL | 冒烟测试 |
+| infrastructure | 基础设施代码（Terraform/K8s） | 冒烟测试 |
+| documentation | 文档/规格 | 人工审阅 |
+| ppt | 演示文稿/HTML slides | 人工 + verify-ppt.sh |
+| library | 库/SDK | 单元测试 |
+| custom | 自定义 | 用户指定 |
+
+output_type 与 mode（fast/standard/full）正交：mode 控制流程严谨度，output_type 控制产出物和验证方式。
 
 ---
 
@@ -113,7 +137,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 ---
 
-### /pdt-propose
+### /mh-propose
 
 | 步骤ID | 活动名称     | 执行角色 | 上游输入                                                     | 交付输出                                                     |
 | ------ | ------------ | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -125,7 +149,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 ---
 
-### /pdt-apply
+### /mh-apply
 
 **顺序约束：**TE进行审计，如果发现问题，将审计结果和相关日志返回给PM，PM判断审计失败，再将相关信息发给DE去修复问题，再进行下一轮审计，轮次最大次数限制在5次，如果超过5次必须上升到人工审核。
 
@@ -139,7 +163,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 ---
 
-### /pdt-archive
+### /mh-archive
 
 | 步骤ID | 活动名称         | 执行角色           | 上游输入                              | 交付输出                   |
 | ------ | ---------------- | ------------------ | ------------------------------------- | -------------------------- |
@@ -172,7 +196,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 在对话框输入：
 ```
-/pdt-init
+/mh-clarify
 ```
 
 系统行为：
@@ -189,7 +213,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 在对话框输入：
 ```
-/pdt-propose
+/mh-propose
 ```
 
 系统行为：
@@ -204,7 +228,7 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 在对话框输入：
 ```
-/pdt-apply
+/mh-apply
 ```
 
 系统行为：
@@ -212,13 +236,13 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 - 所有开发+审计+人工检查完成后，统一进行 SR2 正式审批
 - SR2 通过后 DE 合并到最终产物，TE 最终审计
 - 最终审计通过后呈现 SR3 人工审批
-- 支持断点续作：中断后重新输入 `/pdt-apply` 自动跳过已完成任务
+- 支持断点续作：中断后重新输入 `/mh-apply` 自动跳过已完成任务
 
 **Step 4: 归档结项**
 
 在对话框输入：
 ```
-/pdt-archive
+/mh-archive
 ```
 
 系统行为：
@@ -238,10 +262,12 @@ Rule设定约束 --> Skill标准化执行 --> Agent角色制衡 --> Script硬性
 
 | 命令 | 触发行为 |
 |------|---------|
-| `/pdt-init` | 场景检测（NEW/RESUME/CHANGE）+ 创建任务目录 + 进入需求澄清 |
-| `/pdt-propose` | 前置检查 → SA需求分析 + 架构设计 → TE测试用例 → PM任务编排 → 人工评审 |
-| `/pdt-apply` | 前置检查 → DE开发 → TE审计 → 逐任务人工检查 → SR2 → 合并 → SR3 |
-| `/pdt-archive` | 前置检查 → 产物归档（首次copy/变更merge）→ 用户确认结项 |
+| `/mh-clarify` | 场景检测（NEW/RESUME/CHANGE）+ 环境预检 + 需求澄清 + 产出类型选择 + 模式选择 |
+| `/mh-propose` | 前置检查 → SA需求分析 + 架构设计 → TE测试用例 → PM任务编排 → 人工评审 |
+| `/mh-apply` | 前置检查 → DE开发 → TE审计（test_strategy 驱动）→ 逐任务人工检查 → SR2 → SR3 |
+| `/mh-archive` | 前置检查 → 产物归档（output_type 感知，首次copy/变更merge）→ 用户确认结项 |
+| `/mh-ppt` | output_type=ppt 快捷入口，自动进入主流程 + PPT 补充规则 |
+| `/mh-run` | 全流程自动推进（clarify → propose → apply → archive，阶段间自动衔接） |
 
 ### 内置工具
 

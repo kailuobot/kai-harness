@@ -8,34 +8,69 @@ DE 开发自测标准操作规程。编码完成后、提交回报前必须执�
 
 DE 完成编码实现后，在填写 code-report.md 之前执行。
 
-## Step 1: 单元测试执行
+## 前置: 读取技术栈信息
 
-1. 检测项目测试框架（package.json 中的 test script）
-2. 运行全量单元测试
-3. 记录结果：通过数 / 失败数 / 跳过数
-4. 如有失败：修复代码，重新运行，直到全部通过
+1. 读取 `deliverables/{REQ-ID}/.state.md` 中 tech_stack、test_strategy、output_type 字段
+2. 根据 tech_stack.language 确定命令路由
+
+## Step 1: 测试执行
+
+根据 tech_stack.language 路由测试命令：
+
+| language | 检测方式 | 默认命令 |
+|----------|---------|---------|
+| javascript | package.json scripts.test | npm test / yarn test / pnpm test |
+| python | pytest.ini / pyproject.toml | pytest / python -m pytest |
+| go | go.mod | go test ./... |
+| rust | Cargo.toml | cargo test |
+| java | pom.xml / build.gradle | mvn test / gradle test |
+| unknown | .state.md tech_stack.test_framework | 读取用户指定的命令 |
+
+跳过条件：
+- test_strategy=none 或 test_strategy=manual: 跳过此步，记录 "测试跳过（test_strategy={value}）"
+- output_type=documentation: 跳过此步
+
+执行后记录结果：通过数 / 失败数 / 跳过数。如有失败：修复代码，重新运行。
 
 ## Step 2: Lint 检查
 
-1. 检测项目 lint 工具（eslint / prettier 等）
-2. 运行 lint 检查
-3. 自动修复可修复项
-4. 如有不可自动修复的问题：手动修复
+根据 tech_stack.language 路由 lint 命令：
+
+| language | 检测方式 | 默认命令 |
+|----------|---------|---------|
+| javascript | .eslintrc* / biome.json / package.json | npx eslint . / npx prettier --check . |
+| python | ruff.toml / pyproject.toml [tool.ruff] | ruff check . / black --check . |
+| go | .golangci.yml | golangci-lint run |
+| rust | (内置) | cargo clippy -- -D warnings |
+| java | checkstyle.xml | mvn checkstyle:check |
+| unknown | .state.md tech_stack.lint_tool | 读取用户指定的命令；如无则跳过 |
+
+自动修复可修复项，不可自动修复的手动修复。
 
 ## Step 3: 构建验证
 
-1. 执行项目构建命令（build script）
-2. 确认构建成功，无错误输出
-3. 构建失败则修复后重试
+根据 tech_stack.language 路由构建命令：
+
+| language | 检测方式 | 默认命令 |
+|----------|---------|---------|
+| javascript | package.json scripts.build | npm run build |
+| python | pyproject.toml [build-system] | python -m build / pip install -e . |
+| go | go.mod | go build ./... |
+| rust | Cargo.toml | cargo build --release |
+| java | pom.xml / build.gradle | mvn package -DskipTests / gradle build |
+| unknown | .state.md tech_stack.build_tool | 读取用户指定的命令；如无则跳过 |
+
+跳过条件：
+- output_type=documentation: 跳过构建步骤，记录 "构建跳过（documentation 类型无需构建）"
 
 ## Step 4: 自检清单
 
 逐项确认：
 
-- [ ] 所有新增代码有对应测试
-- [ ] 测试全部通过
-- [ ] Lint 无错误
-- [ ] 构建成功
+- [ ] 所有新增代码有对应测试（test_strategy=none/manual 时此项改为"已确认无需自动化测试"）
+- [ ] 测试全部通过（或已跳过且记录原因）
+- [ ] Lint 无错误（或已跳过且记录原因）
+- [ ] 构建成功（或已跳过且记录原因）
 - [ ] 未修改白名单外的文件
 - [ ] 未引入新的安全漏洞（无硬编码密钥、无 SQL 拼接等）
 
@@ -48,6 +83,7 @@ DE 完成编码实现后，在填写 code-report.md 之前执行。
 - 测试数: {N}
 - 通过: {N}
 - 失败: 0
+- 跳过说明: {如有}
 
 ## 自检结果
 - dev-test: PASS

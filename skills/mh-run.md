@@ -1,6 +1,6 @@
-# Skill: pdt-run
+# Skill: mh-run
 
-全流程自动推进模式。PM 主导，一次性执行 init → propose → apply → archive 全部阶段，仅在人工审批节点暂停。
+全流程自动推进模式。PM 主导，一次性执行 clarify → propose → apply → archive 全部阶段，仅在人工审批节点暂停。
 
 **日志规则：** 同各阶段 skill 定义，追加日志到 `deliverables/{REQ-ID}/process.log`
 
@@ -21,16 +21,16 @@
 
 | 当前阶段完成标记 | 推进动作 |
 |---|---|
-| current_step=INIT-DONE | `[PM] ✦ 自动推进 → propose 阶段` 然后读取并执行 skills/pdt-propose.md |
-| current_step=PROPOSE-DONE（fast/standard）或 SR1 通过（full） | `[PM] ✦ 自动推进 → apply 阶段` 然后读取并执行 skills/pdt-apply.md |
-| current_step=SR3-DONE | `[PM] ✦ 自动推进 → archive 阶段` 然后读取并执行 skills/pdt-archive.md |
+| current_step=INIT-DONE | `[PM] ✦ 自动推进 → propose 阶段` 然后读取并执行 skills/mh-propose.md |
+| current_step=PROPOSE-DONE（fast/standard）或 SR1 通过（full） | `[PM] ✦ 自动推进 → apply 阶段` 然后读取并执行 skills/mh-apply.md |
+| current_step=SR3-DONE | `[PM] ✦ 自动推进 → archive 阶段` 然后读取并执行 skills/mh-archive.md |
 | phase=done | `[PM] ✦ 全流程完成` 打印最终摘要 |
 
 ---
 
 ## Fast 模式特殊行为：连续流
 
-当 mode=fast 时，/pdt-run 将 propose→apply→archive 合并为一个连续流，最大限度减少人工交互：
+当 mode=fast 时，/mh-run 将 propose→apply→archive 合并为一个连续流，最大限度减少人工交互：
 
 **整个 fast 连续流中，用户仅需在以下时刻做出决策：**
 - Init 阶段的 Proposal 确认 + 模式选择
@@ -56,9 +56,9 @@
 
 执行各阶段 skill 时，以下结束语被替换为自动推进：
 
-- `可执行 /pdt-propose` → 自动推进
-- `可执行 /pdt-apply` → 自动推进
-- `可执行 /pdt-archive` → 自动推进
+- `可执行 /mh-propose` → 自动推进
+- `可执行 /mh-apply` → 自动推进
+- `可执行 /mh-archive` → 自动推进
 - 任何形式的"下一步请用户输入命令"提示 → 自动推进
 
 ---
@@ -77,25 +77,25 @@ PM 恢复时检测 `deliverables/{REQ-ID}/.state.md` 中 `auto_advance: true`：
 
 ### Phase 1: Init
 
-1. `[PM] ✦ /pdt-run 启动，进入 init 阶段`
+1. `[PM] ✦ /mh-run 启动，进入 clarify 阶段`
 2. 在 .state.md 中写入 `auto_advance: true`
-3. 读取 skills/pdt-init.md，按其定义执行全部步骤
-4. 到达 INIT-DONE 后：`[PM] ✦ init 完成，自动推进 → propose`
+3. 读取 skills/mh-clarify.md，按其定义执行全部步骤
+4. 到达 INIT-DONE 后：`[PM] ✦ clarify 完成，自动推进 → propose`
 
 ### Phase 2: Propose
 
-1. 读取 skills/pdt-propose.md，按其定义执行全部步骤（含 SR1 审批如适用）
+1. 读取 skills/mh-propose.md，按其定义执行全部步骤（含 SR1 审批如适用）
 2. 到达 PROPOSE-DONE（fast/standard）或 SR1 通过（full）后：`[PM] ✦ propose 完成，自动推进 → apply`
 
 ### Phase 3: Apply
 
-1. 读取 skills/pdt-apply.md，按其定义执行全部步骤
+1. 读取 skills/mh-apply.md，按其定义执行全部步骤
 2. 所有人工审批节点（逐任务确认、SR2、SR3）照常暂停等待用户
 3. 到达 SR3-DONE 后：`[PM] ✦ apply 完成，自动推进 → archive`
 
 ### Phase 4: Archive
 
-1. 读取 skills/pdt-archive.md，按其定义执行全部步骤（含 SR4 审批如适用）
+1. 读取 skills/mh-archive.md，按其定义执行全部步骤（含 SR4 审批如适用）
 2. 到达 phase=done 后：打印最终摘要
 
 ---
@@ -104,7 +104,7 @@ PM 恢复时检测 `deliverables/{REQ-ID}/.state.md` 中 `auto_advance: true`：
 
 ```
 ══════════════════════════════════════
-[/pdt-run 全流程完成]
+[/mh-run 全流程完成]
 需求编号: {REQ-ID}
 模式: {fast|standard|full}
 总耗时: {从 init 启动到 archive 完成的时间}
@@ -123,4 +123,4 @@ PM 恢复时检测 `deliverables/{REQ-ID}/.state.md` 中 `auto_advance: true`：
 - 任何阶段的异常处理逻辑不变，遵循各自 skill 文件定义
 - 如果某阶段因异常暂停（如超过5轮修复上升人工），用户解决后流程继续自动推进
 - 人工审批驳回后的回退逻辑不变，回退完成后继续自动推进
-- 会话中断后重新执行 `/pdt-run`，通过 auto_advance 标记自动恢复推进模式
+- 会话中断后重新执行 `/mh-run`，通过 auto_advance 标记自动恢复推进模式

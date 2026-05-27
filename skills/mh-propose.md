@@ -1,4 +1,4 @@
-# Skill: pdt-propose
+# Skill: mh-propose
 
 需求分析 → 架构设计 → 测试用例 → 计划编排 → 人工评审。按 mode 裁剪步骤。
 
@@ -12,7 +12,7 @@
 2. 验证 `deliverables/{REQ-ID}/.state.md` 中 phase=init 且 current_step=INIT-DONE
 3. 读取 mode 字段确定流程裁剪方式
 4. 验证 `deliverables/{REQ-ID}/proposal.md` 存在且非空
-5. 不满足则阻塞，提示用户先执行 /pdt-init
+5. 不满足则阻塞，提示用户先执行 /mh-clarify
 
 ---
 
@@ -27,7 +27,7 @@
 3. 生成简版 plan-action.md（任务列表 + 执行顺序，无需求对照表）
 4. 写入 `deliverables/{REQ-ID}/plan-action.md`
 5. 更新 `deliverables/{REQ-ID}/.state.md`: phase=propose, current_step=PROPOSE-DONE, sr_status.SR1=skipped
-6. `[PM] 计划编排完成（fast模式，跳过SR1），可执行 /pdt-apply`
+6. `[PM] 计划编排完成（fast模式，跳过SR1），可执行 /mh-apply`
 
 无 SR1 审批。
 
@@ -70,7 +70,7 @@
 2. 读取 design.md 中的 Tasks 清单 + testcases.md
 3. 编排执行计划，写入 `deliverables/{REQ-ID}/plan-action.md`
 4. 更新 `deliverables/{REQ-ID}/.state.md`: phase=propose, current_step=PROPOSE-DONE, sr_status.SR1=skipped
-5. `[PM] 计划编排完成（standard模式，跳过SR1），可执行 /pdt-apply`
+5. `[PM] 计划编排完成（standard模式，跳过SR1），可执行 /mh-apply`
 
 无 SR1 审批。
 
@@ -139,7 +139,7 @@
      - 创建 baselines: `deliverables/{REQ-ID}/baselines/requirement-spec.v1.md` 等
      - 写入 `deliverables/{REQ-ID}/SR1-record.md`
      - 更新 `deliverables/{REQ-ID}/.state.md`: phase=propose, current_step=PROPOSE-DONE, sr_status.SR1=approved
-     - `[PM] SR1 通过，可执行 /pdt-apply`
+     - `[PM] SR1 通过，可执行 /mh-apply`
    - **驳回**:
      - 记录驳回原因到 SR1-record.md
      - 回退到对应步骤重新执行

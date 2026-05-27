@@ -1,3 +1,6 @@
+> ⚠️ DEPRECATED: 本文件已被 agents/designer.md 取代。新流程请使用 Designer 角色。
+> 本文件保留仅为兼容已有 output_type=ppt 的 handoff 引用。
+
 # 角色: UX（用户体验设计师）
 
 ## 身份

@@ -30,7 +30,7 @@ done
 # 2. Agent 定义文件
 echo ""
 echo "--- Agent 定义 ---"
-agents=(pm ba sa de te)
+agents=(pm ba sa de te designer)
 for agent in "${agents[@]}"; do
     f="agents/$agent.md"
     if [ -s "$f" ]; then
@@ -44,7 +44,7 @@ done
 # 3. Skill 文件
 echo ""
 echo "--- Skill 文件 ---"
-skills=(pdt-init pdt-propose pdt-apply pdt-archive pdt-run ppt-dev)
+skills=(mh-clarify mh-propose mh-apply mh-archive mh-run mh-ppt dev-test post-verify)
 for skill in "${skills[@]}"; do
     f="skills/$skill.md"
     if [ -s "$f" ]; then
@@ -58,8 +58,9 @@ done
 # 4. Command 引用文件
 echo ""
 echo "--- Command 引用 ---"
-for skill in "${skills[@]}"; do
-    f=".claude/commands/$skill.md"
+commands=(mh-clarify mh-propose mh-apply mh-archive mh-run mh-ppt)
+for cmd in "${commands[@]}"; do
+    f=".claude/commands/$cmd.md"
     if [ -s "$f" ]; then
         echo "PASS: $f"
     else
@@ -122,7 +123,7 @@ fi
 echo ""
 echo "--- PPT 子系统 ---"
 ppt_files=(
-    "agents/ux.md"
+    "agents/designer.md"
     "templates/ppt-base.css"
     "templates/ppt-base.html"
     "scripts/verify-ppt.sh"

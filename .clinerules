@@ -4,14 +4,16 @@
 
 ## 核心规则
 
-1. 严格按 init → propose → apply → archive 顺序执行，禁止跳步
+1. 严格按 clarify → propose → apply → archive 顺序执行，禁止跳步
 2. 每步结束返回 PM，PM 检查通过后才启动下一步
-3. 禁止跳过人工审批节点
-4. 角色间信息传递通过 handoff 文件，禁止仅靠对话传递
-5. 非 PM 角色仅读取 handoff 白名单中的文件
-6. 禁止修改上游制品和已交付的 handoff 文件
-7. 任何文件写入后验证文件存在且非空
-8. 断点恢复仅依据 .state.md，禁止依赖对话历史
+3. 禁止跳过人工审批节点（SR1/SR2/SR3/SR4）
+4. PM 每次调度前必须打印心跳：`[PM] {动作描述}`
+5. 角色间信息传递通过 handoff 文件，禁止仅靠对话传递
+6. 非 PM 角色仅读取 handoff 白名单中的文件
+7. 禁止修改上游制品和已交付的 handoff 文件
+8. 任何文件写入后验证文件存在且非空
+9. 断点恢复仅依据 .state.md，禁止依赖对话历史
+10. /mh-run 模式下允许阶段间自动推进，但阶段内审批节点仍禁止跳过
 
 ## 角色隔离
 
@@ -20,6 +22,25 @@
 - SA：只做架构设计，禁止需求分析、开发编码、调度
 - DE：只做编码实现，禁止设计、需求定义、调度
 - TE：只做审计验证，禁止开发、设计、调度
+- Designer：只做视觉/结构设计，禁止编码、需求定义、调度
+
+## 产出类型体系（output_type）
+
+框架支持任意类型的需求开发，通过 output_type 参数驱动流程适配：
+
+| output_type | 默认 test_strategy |
+|-------------|-------------------|
+| web-app | e2e / integration |
+| backend-api | integration |
+| cli-tool | integration |
+| data-pipeline | smoke |
+| infrastructure | smoke |
+| documentation | manual |
+| ppt | manual |
+| library | unit |
+| custom | 用户指定 |
+
+output_type 与 mode 正交：mode 控制流程严谨度，output_type 控制产出物和验证方式。
 
 ## 命令识别
 
@@ -27,10 +48,12 @@
 
 | 用户输入 | 读取文件 | 动作 |
 |---------|---------|------|
-| `/pdt-init` | skills/pdt-init.md | 读取 CLAUDE.md + agents/pm.md，按 skill 步骤执行 |
-| `/pdt-propose` | skills/pdt-propose.md | 读取 CLAUDE.md + agents/pm.md，按 skill 步骤执行 |
-| `/pdt-apply` | skills/pdt-apply.md | 读取 CLAUDE.md + agents/pm.md，按 skill 步骤执行 |
-| `/pdt-archive` | skills/pdt-archive.md | 读取 CLAUDE.md + agents/pm.md，按 skill 步骤执行 |
+| `/mh-clarify` | skills/mh-clarify.md | 需求初始化与澄清 + 产出类型选择 |
+| `/mh-propose` | skills/mh-propose.md | 分析→设计→用例→评审 |
+| `/mh-apply` | skills/mh-apply.md | 开发→审计→人工审批 |
+| `/mh-archive` | skills/mh-archive.md | 归档+结项 |
+| `/mh-run` | skills/mh-run.md | 全流程自动推进 |
+| `/mh-ppt` | skills/mh-ppt.md | PPT 快捷入口（output_type=ppt） |
 
 ## 角色切换（Cline 模式）
 
@@ -44,5 +67,5 @@ Cline 环境下无 SubAgent 能力，角色隔离通过以下方式实现：
 
 ## 辅助 Skill
 
-- DE 编码后执行: skills/dev-test.md
+- DE 编码后执行: skills/dev-test.md（根据 tech_stack 路由测试命令）
 - dev-test 通过后执行: skills/post-verify.md

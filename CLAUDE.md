@@ -11,17 +11,18 @@
 | SA | 架构设计 | agents/sa.md |
 | DE | 编码实现 | agents/de.md |
 | TE | 审计验证 | agents/te.md |
+| Designer | 视觉/结构设计 | agents/designer.md |
 
 ## 命令
 
 | 命令 | 作用 | Skill 文件 |
 |------|------|-----------|
-| /pdt-init | 需求初始化与澄清 | skills/pdt-init.md |
-| /pdt-propose | 分析→设计→用例→评审 | skills/pdt-propose.md |
-| /pdt-apply | 开发→审计→人工审批 | skills/pdt-apply.md |
-| /pdt-archive | 归档+结项 | skills/pdt-archive.md |
-| /pdt-run | 全流程自动推进 | skills/pdt-run.md |
-| /ppt-dev | PPT 类 HTML 页面开发 | skills/ppt-dev.md |
+| /mh-clarify | 需求初始化与澄清 | skills/mh-clarify.md |
+| /mh-propose | 分析→设计→用例→评审 | skills/mh-propose.md |
+| /mh-apply | 开发→审计→人工审批 | skills/mh-apply.md |
+| /mh-archive | 归档+结项 | skills/mh-archive.md |
+| /mh-run | 全流程自动推进 | skills/mh-run.md |
+| /mh-ppt | PPT 类 HTML 页面开发 | skills/mh-ppt.md |
 
 ---
 
@@ -33,15 +34,15 @@
 
 ## 1. 流程纪律
 
-- 严格按 init → propose → apply → archive 顺序执行，禁止跳步
+- 严格按 clarify → propose → apply → archive 顺序执行，禁止跳步
 - 每步结束必须返回 PM，PM 检查通过后才启动下一步
 - 禁止跳过人工审批节点（SR1/SR2/SR3/SR4）
 - PM 每次调度前必须打印心跳：`[PM] {动作描述}`
-- /pdt-run 模式下允许阶段间自动推进，但阶段内审批节点仍禁止跳过
+- /mh-run 模式下允许阶段间自动推进，但阶段内审批节点仍禁止跳过
 
 ## 2. 角色隔离
 
-- 五个角色（PM/BA/SA/DE/TE）职责严格分离，禁止越权
+- 六个角色（PM/BA/SA/DE/TE/Designer）职责严格分离，禁止越权
 - 角色间信息传递必须经 PM 中转，通过 handoff 文件实现
 - 非 PM 角色仅读取 handoff 白名单中的文件
 - 非 PM 角色禁止引用对话历史中其他角色的推理或产出
@@ -56,8 +57,8 @@
 ## 4. 自检纪律
 
 - 任何文件写入后必须验证文件存在且非空
-- DE 编码后必须执行 dev-test skill
-- TE 审计优先使用真实浏览器执行 E2E 测试；环境不可用时降级并标注
+- DE 编码后必须执行 dev-test skill（根据 tech_stack 路由测试命令）
+- TE 审计根据 test_strategy 选择验证方法；E2E 环境不可用时降级并标注
 - 交付判定依赖脚本退出码，不依赖 Agent 自述
 
 ## 5. 断点恢复
@@ -69,6 +70,26 @@
 
 ## 6. 平台适配
 
-- Claude Code 环境：BA/SA/DE/TE 通过 SubAgent 执行（物理隔离）
+- Claude Code 环境：BA/SA/DE/TE/Designer 通过 SubAgent 执行（物理隔离）
 - Cline 环境：通过文件协议 + 行为约束实现角色隔离（逻辑隔离）
 - 两种模式共享同一套 handoff 格式和 skill 内容
+
+## 7. 产出类型体系（output_type）
+
+框架支持任意类型的需求开发，通过 output_type 参数驱动流程适配：
+
+| output_type | 说明 | 默认 test_strategy |
+|-------------|------|-------------------|
+| web-app | Web 应用（前端/全栈） | e2e / integration |
+| backend-api | 后端服务/API | integration |
+| cli-tool | 命令行工具 | integration |
+| data-pipeline | 数据管道/ETL | smoke |
+| infrastructure | 基础设施代码 | smoke |
+| documentation | 文档/规格 | manual |
+| ppt | 演示文稿/HTML slides | manual |
+| library | 库/SDK | unit |
+| custom | 自定义 | 用户指定 |
+
+- output_type 与 mode 正交：mode 控制流程严谨度，output_type 控制产出物类型和验证方式
+- output_type 在 clarify 阶段确定，写入 .state.md，贯穿全流程
+- 各角色根据 output_type 和 tech_stack 选择对应的工具和验证方法

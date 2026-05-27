@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.3.0] - 2026-05-27
+
+框架泛化改造：从 Web/JavaScript 专用升级为格式无关的通用研发执行框架。
+
+### 核心新增
+
+- **output_type 体系**: 新增产出类型概念（web-app/backend-api/cli-tool/data-pipeline/infrastructure/documentation/ppt/library/custom），与 mode 正交，驱动全流程适配
+- **test_strategy 机制**: TE 验证方式由 test_strategy 参数驱动（e2e/unit/integration/smoke/manual/none），替代原有的 browser_available 二分逻辑
+- **多语言环境检测**: 支持 Python/Node.js/Go/Rust/Java 自动检测（语言、包管理器、测试框架、构建工具、lint 工具）
+- **Designer 角色**: 新增泛化设计师角色（agents/designer.md），根据 output_type 产出不同设计制品
+
+### 流程变更
+
+- **mh-clarify**: 新增"产出类型选择"步骤（Step 3），环境预检泛化为多语言检测
+- **mh-apply**: TE 派发逻辑改为 test_strategy 路由
+- **mh-archive**: ARC-3 步骤增加 output_type 感知归档策略
+- **mh-ppt**: 重构为主流程补充规则，/mh-ppt 作为 output_type=ppt 的快捷入口
+
+### 技术改进
+
+- **dev-test.md**: 完全重写，按 tech_stack.language 路由测试/lint/构建命令
+- **verify.sh**: check_b() 增加 output_type 和 test_strategy 感知，动态校验产出物
+- **handoff 模板**: 新增 output_type 和 tech_stack 字段
+- **.state.md schema**: 新增 output_type、tech_stack（对象）、test_strategy 字段
+
+### 角色变更
+
+- 新增 Designer 角色（agents/designer.md）
+- UX 角色标记为 DEPRECATED（agents/ux.md），兼容已有 handoff
+- 角色隔离规则更新为六角色（PM/BA/SA/DE/TE/Designer）
+
+### 命名变更
+
+- /pdt-init → /mh-clarify
+- /pdt-propose → /mh-propose
+- /pdt-apply → /mh-apply
+- /pdt-archive → /mh-archive
+- /pdt-run → /mh-run
+- /ppt-dev → /mh-ppt
+
+---
+
 ## [0.2.0] - 2026-05-20
 
 十项结构性优化，修复三轮实际使用（REQ001-REQ003）中暴露的问题。
@@ -19,11 +61,11 @@
 
 ### Skill 功能增强
 
-- **pdt-run**: 新增 fast 模式连续流（propose→apply→archive 自动串联，仅一个人工确认点）
-- **pdt-archive**: 新增变更归档 Merge 策略（REQ-ID 标注、段落替换、DEPRECATED 标记）
-- **pdt-init**: 新增环境预检（Node.js 版本、浏览器可用性检测，写入 .state.md env 字段）
-- **pdt-propose**: standard 模式 SA handoff 约束新增需求映射简表要求
-- **pdt-apply**: 新增浏览器降级逻辑（env.browser_available=false 时跳过 E2E，标注 DEGRADED）
+- **mh-run**: 新增 fast 模式连续流（propose→apply→archive 自动串联，仅一个人工确认点）
+- **mh-archive**: 新增变更归档 Merge 策略（REQ-ID 标注、段落替换、DEPRECATED 标记）
+- **mh-clarify**: 新增环境预检（Node.js 版本、浏览器可用性检测，写入 .state.md env 字段）
+- **mh-propose**: standard 模式 SA handoff 约束新增需求映射简表要求
+- **mh-apply**: 新增浏览器降级逻辑（env.browser_available=false 时跳过 E2E，标注 DEGRADED）
 
 ### Agent 定义更新
 

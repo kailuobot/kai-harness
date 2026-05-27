@@ -1,4 +1,4 @@
-# Skill: pdt-archive
+# Skill: mh-archive
 
 产物归档 + 结项确认。PM 执行，支持首次归档和变更归档两种模式。
 
@@ -12,7 +12,7 @@
 2. 读取 `deliverables/{REQ-ID}/.state.md` 中 mode 和 sr_status.SR3
 3. 验证 sr_status.SR3=approved（standard/full）或 sr_status.SR3=approved（fast，在apply中已设置）
 4. 验证 `deliverables/{REQ-ID}/output/` 存在且非空
-5. 不满足则阻塞，提示用户先完成 /pdt-apply
+5. 不满足则阻塞，提示用户先完成 /mh-apply
 
 ## 归档模式检测
 
@@ -44,16 +44,30 @@
 4. 校验目标文件存在且非空（standard/full 模式）
 5. `[PM] ARC-2 完成`
 
-## Step ARC-3: 代码归档
+## Step ARC-3: 产出物归档（output_type 感知）
 
 **执行角色:** PM
 
-1. `[PM] 启动 ARC-3 代码归档`
-2. 将 `deliverables/{REQ-ID}/output/` 内容复制到 `output/final/`
-3. 首次归档: 直接复制全部文件
-4. 变更归档: 覆盖已有同名文件，保留不冲突的已有文件
-5. 校验 `output/final/` 非空
-6. `[PM] ARC-3 完成`
+1. `[PM] 启动 ARC-3 产出物归档`
+2. 读取 .state.md 中 output_type
+3. 根据 output_type 执行归档策略：
+
+| output_type | 归档源 | 归档目标 | 额外归档 |
+|-------------|--------|---------|---------|
+| ppt | output/ | output/final/ | designer/wireframes/ → output/final/wireframes/ |
+| web-app | output/ | output/final/ | — |
+| backend-api | output/ | output/final/ | — |
+| cli-tool | output/ | output/final/ | — |
+| library | output/ | output/final/ | — |
+| data-pipeline | output/ | output/final/ | — |
+| infrastructure | output/ | output/final/ | — |
+| documentation | output/ | output/final/ | — |
+| custom | output/ | output/final/ | 由 plan-action.md 指定 |
+
+4. 首次归档: 直接复制全部文件
+5. 变更归档: 覆盖已有同名文件，保留不冲突的已有文件
+6. 校验 `output/final/` 非空
+7. `[PM] ARC-3 完成`
 
 ## Step SR4: 项目结项确认（人工审批）
 
@@ -73,6 +87,7 @@
 1. `[PM] 启动 SR4 项目结项确认`
 2. 向用户呈现归档摘要：
    - 归档模式（首次/变更）
+   - 产出类型: {output_type}
    - 需求规格: spec/requirement-spec.md
    - 技术设计: spec/design.md
    - 最终产物: output/final/ 文件清单

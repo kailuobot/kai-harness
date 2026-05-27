@@ -7,7 +7,7 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
 ## 流程总览
 
 ```
-/pdt-init          /pdt-propose                    /pdt-apply                         /pdt-archive
+/mh-clarify          /mh-propose                    /mh-apply                         /mh-archive
 ─────────────      ─────────────────────────       ──────────────────────────────     ─────────────────
                                                                                      
 [人机协作]         [自动化 + 人工审批]              [自动化 + 多轮修复 + 人工审批]     [归档 + 结项]
@@ -39,14 +39,14 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
 
 ---
 
-## 自动推进模式（/pdt-run）
+## 自动推进模式（/mh-run）
 
-用户可通过 `/pdt-run` 启动全流程自动推进模式，等效于依次执行 init → propose → apply → archive，但无需在阶段间手动输入命令。
+用户可通过 `/mh-run` 启动全流程自动推进模式，等效于依次执行 clarify → propose → apply → archive，但无需在阶段间手动输入命令。
 
 - 阶段间自动衔接，消除手动触发等待（实测节省约 5 分钟）
 - 阶段内所有人工审批节点（★标记）照常暂停
 - 支持断点恢复（.state.md 中 `auto_advance: true`）
-- 各阶段独立命令（/pdt-init、/pdt-propose、/pdt-apply、/pdt-archive）仍可单独使用
+- 各阶段独立命令（/mh-clarify、/mh-propose、/mh-apply、/mh-archive）仍可单独使用
 
 推进触发条件：
 
@@ -66,7 +66,7 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
 │ User │     │  PM  │     │  BA  │     │  SA  │     │  DE  │     │  TE  │
 └──┬───┘     └──┬───┘     └──┬───┘     └──┬───┘     └──┬───┘     └──┬───┘
    │            │            │            │            │            │
-   │ /pdt-init  │            │            │            │            │
+   │ /mh-clarify  │            │            │            │            │
    │───────────>│            │            │            │            │
    │            │            │            │            │            │
    │<──提问──── │            │            │            │            │
@@ -75,7 +75,7 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
    │<─Proposal─ │            │            │            │            │
    │──确认─────>│            │            │            │            │
    │            │            │            │            │            │
-   │ /pdt-propose            │            │            │            │
+   │ /mh-propose            │            │            │            │
    │───────────>│            │            │            │            │
    │            │──handoff──>│            │            │            │
    │            │<──回报─────│            │            │            │
@@ -88,7 +88,7 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
    │<──SR1审批──│            │            │            │            │
    │──通过─────>│            │            │            │            │
    │            │            │            │            │            │
-   │ /pdt-apply │            │            │            │            │
+   │ /mh-apply │            │            │            │            │
    │───────────>│            │            │            │            │
    │            │──handoff───────────────────────────>│            │
    │            │<──回报─────────────────────────────-│            │
@@ -104,7 +104,7 @@ PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决�
    │<──SR3审批──│            │            │            │            │
    │──通过─────>│            │            │            │            │
    │            │            │            │            │            │
-   │ /pdt-archive            │            │            │            │
+   │ /mh-archive            │            │            │            │
    │───────────>│            │            │            │            │
    │            │──归档──────>            │            │            │
    │<──SR4确认──│            │            │            │            │
@@ -221,7 +221,7 @@ PM 在以下时机必须打印心跳信息（格式: `[PM] {描述}`）：
 
 示例：
 ```
-[2026-05-16T10:00:00Z] [PM] /pdt-propose 流程启动
+[2026-05-16T10:00:00Z] [PM] /mh-propose 流程启动
 [2026-05-16T10:00:01Z] [PM] 调度 BA 执行需求分析
 [2026-05-16T10:01:30Z] [BA] 需求分析完成，输出: deliverables/ba/requirement-spec.md
 [2026-05-16T10:01:31Z] [PM] BA 需求分析完成，产物已验证
@@ -278,11 +278,12 @@ PM 恢复执行时（新会话或上下文重置后）：
 
 | 阶段 | 执行权威文件 | 概要 |
 |------|------------|------|
-| init | skills/pdt-init.md | 场景检测 + 环境预检 + 需求澄清 + Proposal 定稿 |
-| propose | skills/pdt-propose.md | BA需求 → SA设计 → TE用例 → PM编排 → SR1（按 mode 裁剪） |
-| apply | skills/pdt-apply.md | DE开发 → TE审计 → 修复循环 → SR2 → SR3（按 mode 裁剪） |
-| archive | skills/pdt-archive.md | 需求归档 → 设计归档 → 代码归档 → SR4（含 merge 策略） |
-| run | skills/pdt-run.md | 全流程自动推进（含 fast 连续流） |
+| clarify | skills/mh-clarify.md | 场景检测 + 环境预检 + 需求澄清 + 产出类型选择 + 模式选择 + Proposal 定稿 |
+| propose | skills/mh-propose.md | BA需求 → SA设计 → TE用例 → PM编排 → SR1（按 mode 裁剪） |
+| apply | skills/mh-apply.md | DE开发 → TE审计（test_strategy 驱动）→ 修复循环 → SR2 → SR3（按 mode 裁剪） |
+| archive | skills/mh-archive.md | 需求归档 → 设计归档 → 产出物归档（output_type 感知）→ SR4（含 merge 策略） |
+| run | skills/mh-run.md | 全流程自动推进（含 fast 连续流） |
+| ppt | skills/mh-ppt.md | output_type=ppt 补充规则（Designer wireframe + verify-ppt.sh） |
 
 > Skills 文件是 Agent 的唯一执行依据。本文档仅作为人类阅读的流程参考。
 

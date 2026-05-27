@@ -69,7 +69,7 @@ check_a() {
     fi
 }
 
-# B类检查: 阶段产出物完整性（mode 感知）
+# B类检查: 阶段产出物完整性（mode + output_type 感知）
 check_b() {
     echo "=== B类检查: 阶段产出物完整性 ==="
 
@@ -78,15 +78,17 @@ check_b() {
         return
     fi
 
-    local phase
+    local phase mode output_type test_strategy
     phase=$(grep "^phase:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
-    local mode
     mode=$(get_mode)
+    output_type=$(grep "^output_type:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+    test_strategy=$(grep "^test_strategy:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
 
-    echo "INFO: phase=$phase, mode=$mode"
+    echo "INFO: phase=$phase, mode=$mode, output_type=$output_type, test_strategy=$test_strategy"
 
     # propose 阶段产物检查（propose/apply/archive 都需要）
     if [ "$phase" = "propose" ] || [ "$phase" = "apply" ] || [ "$phase" = "archive" ]; then
+        # SA design.md - required for standard/full
         if [ "$mode" != "fast" ]; then
             if [ ! -s "$REQ_DIR/sa/design.md" ]; then
                 echo "FAIL: $REQ_DIR/sa/design.md 缺失或为空"
@@ -96,6 +98,7 @@ check_b() {
             fi
         fi
 
+        # BA requirement-spec.md - only full mode
         if [ "$mode" = "full" ]; then
             if [ ! -s "$REQ_DIR/ba/requirement-spec.md" ]; then
                 echo "FAIL: $REQ_DIR/ba/requirement-spec.md 缺失或为空"
@@ -105,15 +108,21 @@ check_b() {
             fi
         fi
 
+        # TE testcases.md - standard/full, skip for manual/none test_strategy
         if [ "$mode" != "fast" ]; then
-            if [ ! -s "$REQ_DIR/te/testcases.md" ]; then
-                echo "FAIL: $REQ_DIR/te/testcases.md 缺失或为空"
-                ERRORS=$((ERRORS + 1))
+            if [ "$test_strategy" != "manual" ] && [ "$test_strategy" != "none" ]; then
+                if [ ! -s "$REQ_DIR/te/testcases.md" ]; then
+                    echo "FAIL: $REQ_DIR/te/testcases.md 缺失或为空"
+                    ERRORS=$((ERRORS + 1))
+                else
+                    echo "PASS: $REQ_DIR/te/testcases.md"
+                fi
             else
-                echo "PASS: $REQ_DIR/te/testcases.md"
+                echo "INFO: test_strategy=$test_strategy, testcases.md 非必需"
             fi
         fi
 
+        # plan-action.md - always required
         if [ ! -s "$REQ_DIR/plan-action.md" ]; then
             echo "FAIL: $REQ_DIR/plan-action.md 缺失或为空"
             ERRORS=$((ERRORS + 1))
@@ -130,6 +139,31 @@ check_b() {
         else
             echo "PASS: $REQ_DIR/output/ 非空"
         fi
+
+        # output_type-specific checks
+        case "$output_type" in
+            ppt)
+                if [ ! -s "$REQ_DIR/designer/slide-spec.md" ] && [ ! -s "$REQ_DIR/ux/slide-spec.md" ]; then
+                    echo "FAIL: slide-spec.md 缺失（output_type=ppt）"
+                    ERRORS=$((ERRORS + 1))
+                else
+                    echo "PASS: slide-spec.md 存在（output_type=ppt）"
+                fi
+                ;;
+            web-app)
+                if ! find "$REQ_DIR/output" -type f \( -name "*.html" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.vue" -o -name "*.py" -o -name "*.go" -o -name "*.java" -o -name "*.rs" -o -name "*.js" -o -name "*.ts" -o -name "*.rb" \) 2>/dev/null | grep -q .; then
+                    echo "WARN: output_type=web-app 但未检测到源代码文件"
+                fi
+                ;;
+            backend-api|cli-tool|library)
+                if ! find "$REQ_DIR/output" -type f \( -name "*.py" -o -name "*.go" -o -name "*.java" -o -name "*.rs" -o -name "*.js" -o -name "*.ts" -o -name "*.rb" -o -name "*.c" -o -name "*.cpp" \) 2>/dev/null | grep -q .; then
+                    echo "WARN: output_type=$output_type 但未检测到源代码文件"
+                fi
+                ;;
+            *)
+                echo "INFO: output_type=$output_type, 使用通用产出物检查"
+                ;;
+        esac
     fi
 
     # archive 阶段产物检查

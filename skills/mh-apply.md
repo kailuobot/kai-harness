@@ -1,4 +1,4 @@
-# Skill: pdt-apply
+# Skill: mh-apply
 
 开发实现 → 审计验证 → 人工审批。按 mode 裁剪步骤。
 
@@ -12,7 +12,7 @@
 2. 验证 `deliverables/{REQ-ID}/.state.md` 中 current_step=PROPOSE-DONE
 3. 读取 mode 字段确定流程裁剪方式
 4. 验证 `deliverables/{REQ-ID}/plan-action.md` 存在且非空
-5. 不满足则阻塞，提示用户先完成 /pdt-propose
+5. 不满足则阻塞，提示用户先完成 /mh-propose
 
 ## 断点续作
 
@@ -42,12 +42,12 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
 
 **Step 2: TE 轻量审计**
 
-1. `[PM] fast 模式，TE 轻量审计（工程验证，跳过E2E）`
+1. `[PM] fast 模式，TE 轻量审计`
 2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-R1.md`
    - to: TE
-   - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/proposal.md`
+   - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/proposal.md`, `deliverables/{REQ-ID}/.state.md`
    - 期望输出: `deliverables/{REQ-ID}/te/temp-test-report.md`
-   - 约束: 仅执行工程验证（lint + 构建 + 基础功能检查），跳过浏览器E2E
+   - 约束: 根据 .state.md 中 test_strategy 执行对应验证；如 test_strategy=manual，生成人工检查清单
 3. 派发任务给 TE
 4. 接收回报:
    - PASS → 继续 Step 3
@@ -66,7 +66,7 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
    ```
 3. 用户通过:
    - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR2=skipped, sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
-   - `[PM] 确认通过（fast模式），可执行 /pdt-archive`
+   - `[PM] 确认通过（fast模式），可执行 /mh-archive`
 4. 用户驳回:
    - 记录原因，回退 DE 修复
 
@@ -97,8 +97,12 @@ END FOR
 3. 派发任务给 DE
 4. DE 完成后，派发 TE 审计:
    - 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
-   - 如 .state.md 中 `env.browser_available=true`: TE 执行完整审计（含 E2E）
-   - 如 .state.md 中 `env.browser_available=false`: TE 执行工程验证，跳过 E2E，报告中标注 `[E2E DEGRADED - 环境不可用]`
+   - 读取 .state.md 中 test_strategy:
+     - test_strategy=e2e 且 env.browser_available=true: TE 执行完整审计（含 E2E）
+     - test_strategy=e2e 且 env.browser_available=false: TE 执行工程验证，跳过 E2E，标注 `[E2E DEGRADED]`
+     - test_strategy=unit/integration/smoke: TE 执行对应级别测试 + 工程验证
+     - test_strategy=manual: TE 生成人工验证清单，标注 `[MANUAL VERIFICATION REQUIRED]`
+     - test_strategy=none: TE 仅执行工程验证（lint + 构建）
 5. 审计结果:
    - PASS → 人工确认该任务 → 记入 completed_steps → 下一个 Task
    - FAIL → 修复循环（最多5轮）
@@ -134,7 +138,7 @@ END FOR
 3. 通过:
    - 写入 SR3-record.md
    - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
-   - `[PM] SR3 通过，可执行 /pdt-archive`
+   - `[PM] SR3 通过，可执行 /mh-archive`
 4. 驳回: 回退修复
 
 ---

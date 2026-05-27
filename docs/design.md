@@ -158,14 +158,16 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │   ├── ba.md
 │   ├── sa.md
 │   ├── de.md
-│   └── te.md
+│   ├── te.md
+│   └── designer.md
 │
 ├── skills/                    # 第二层: Skills (SOP)
-│   ├── pdt-init.md
-│   ├── pdt-propose.md
-│   ├── pdt-apply.md
-│   ├── pdt-archive.md
-│   ├── pdt-run.md
+│   ├── mh-clarify.md
+│   ├── mh-propose.md
+│   ├── mh-apply.md
+│   ├── mh-archive.md
+│   ├── mh-run.md
+│   ├── mh-ppt.md
 │   ├── dev-test.md
 │   └── post-verify.md
 │
@@ -178,11 +180,12 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │   └── handoff-template.md
 │
 ├── .claude/commands/          # Claude Code slash command 入口
-│   ├── pdt-init.md            → 引用 skills/pdt-init.md
-│   ├── pdt-propose.md         → 引用 skills/pdt-propose.md
-│   ├── pdt-apply.md           → 引用 skills/pdt-apply.md
-│   ├── pdt-archive.md         → 引用 skills/pdt-archive.md
-│   └── pdt-run.md             → 引用 skills/pdt-run.md
+│   ├── mh-clarify.md            → 引用 skills/mh-clarify.md
+│   ├── mh-propose.md         → 引用 skills/mh-propose.md
+│   ├── mh-apply.md           → 引用 skills/mh-apply.md
+│   ├── mh-archive.md         → 引用 skills/mh-archive.md
+│   ├── mh-ppt.md             → 引用 skills/mh-ppt.md（output_type=ppt 快捷入口）
+│   └── mh-run.md             → 引用 skills/mh-run.md
 │
 ├── reference/                 # 用户输入参考资料
 ├── deliverables/              # 过程产物（按 REQ-ID 隔离）
@@ -198,6 +201,7 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │       ├── sa/                # SA 产出
 │       ├── te/                # TE 产出
 │       ├── de/                # DE 产出
+│       ├── designer/          # Designer 产出
 │       ├── output/            # 开发产出物
 │       └── baselines/         # 基线快照
 ├── spec/                      # 用户项目归档规格
@@ -240,38 +244,79 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 
 ### 8.3 Fast 模式连续流
 
-mode=fast 时，/pdt-run 自动将 propose→apply→archive 合并为连续执行：
+mode=fast 时，/mh-run 自动将 propose→apply→archive 合并为连续执行：
 - 阶段间无需用户手动触发下一命令
 - 仅保留 Apply 阶段的人工确认作为唯一审批点
 - 全流程预期交互次数：2 次（init 确认 + apply 确认）
 
 ---
 
-## 9. 环境预检与降级
+## 9. 产出类型体系（output_type）
 
-### 9.1 环境预检（pdt-init 阶段）
+### 9.1 概念
 
-init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字段：
+output_type 是框架的核心参数之一，与 mode 正交：
+- **mode** 控制流程严谨度（多少审批节点、多少角色参与）
+- **output_type** 控制产出物类型和验证方式（用什么工具、怎么测试）
 
-| 检测项 | 方法 | 写入字段 |
-|--------|------|---------|
-| Node.js 版本 | `node --version` | env.node_version |
-| 浏览器可用性 | `npx playwright install --dry-run` 或检测已安装浏览器 | env.browser_available |
+### 9.2 可选值与默认 test_strategy
 
-### 9.2 E2E 测试降级策略
+| output_type | 说明 | 默认 test_strategy | Designer 产出 |
+|-------------|------|-------------------|--------------|
+| web-app | Web 应用（前端/全栈） | e2e / integration | UI wireframe |
+| backend-api | 后端服务/API | integration | API 设计文档 |
+| cli-tool | 命令行工具 | integration | — |
+| data-pipeline | 数据管道/ETL | smoke | 数据流图 |
+| infrastructure | 基础设施代码 | smoke | 架构拓扑图 |
+| documentation | 文档/规格 | manual | 文档结构大纲 |
+| ppt | 演示文稿/HTML slides | manual | wireframe HTML |
+| library | 库/SDK | unit | — |
+| custom | 自定义 | 用户指定 | 由 SA 指定 |
 
-根据 `env.browser_available` 字段决定 TE 行为：
+### 9.3 确定时机
 
-| 环境状态 | fast 模式 | standard/full 模式 |
-|---------|-----------|-------------------|
-| browser_available=true | 工程验证（跳过 E2E） | 完整审计（含 E2E） |
-| browser_available=false | 工程验证（跳过 E2E） | 工程验证 + 标注 `[E2E DEGRADED - 环境不可用]` |
+output_type 在 clarify 阶段的"产出类型选择"步骤确定（Step 3），基于：
+1. 环境自动检测结果（tech_stack）
+2. 需求内容分析
+3. 用户确认
+
+确定后写入 .state.md，贯穿全流程。
+
+---
+
+## 10. 环境预检与技术栈检测
+
+### 10.1 多语言环境检测（mh-clarify 阶段）
+
+init 完成后自动执行技术栈检测，结果写入 `.state.md` 的 `tech_stack` 和 `env` 字段：
+
+| 检测项 | 检测方式 | 写入字段 |
+|--------|---------|---------|
+| 语言 | pyproject.toml/package.json/go.mod/Cargo.toml/pom.xml | tech_stack.language |
+| 包管理器 | lock 文件类型推断 | tech_stack.package_manager |
+| 测试框架 | 配置文件解析 | tech_stack.test_framework |
+| 构建工具 | 配置文件解析 | tech_stack.build_tool |
+| Lint 工具 | 配置文件检测 | tech_stack.lint_tool |
+| 浏览器可用性 | Playwright/Selenium/Cypress 检测（仅 UI 类型） | env.browser_available |
+
+### 10.2 test_strategy 驱动的验证策略
+
+根据 `test_strategy` 字段决定 TE 行为：
+
+| test_strategy | 验证内容 | 降级条件 |
+|---------------|---------|---------|
+| e2e | 浏览器 E2E + 回归 + 工程验证 | browser_available=false 时标注 `[E2E DEGRADED]` |
+| unit | 单元测试覆盖率 + 工程验证 | — |
+| integration | 接口/集成测试 + 工程验证 | — |
+| smoke | 构建成功 + 基本功能可用 | — |
+| manual | 生成人工验证清单 | 标注 `[MANUAL VERIFICATION]` |
+| none | 仅工程验证（lint + 构建） | 标注 `[MINIMAL VERIFICATION]` |
 
 降级不阻塞流程，但报告中必须明确标注，供人工审批时参考。
 
 ---
 
-## 10. 归档 Merge 策略
+## 11. 归档 Merge 策略
 
 变更归档（spec/ 已有文件时）按以下规则合并：
 
@@ -304,7 +349,7 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 
 ---
 
-## 11. Token 节流与上下文管理
+## 12. Token 节流与上下文管理
 
 | 平台 | 隔离机制 | 节流策略 |
 |------|---------|---------|
@@ -317,7 +362,7 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 
 ---
 
-## 12. 日志规范
+## 13. 日志规范
 
 所有 Skill 执行过程中必须记录日志到 `deliverables/{REQ-ID}/process.log`。
 
@@ -338,7 +383,7 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 
 ---
 
-## 13. 扩展性考虑
+## 14. 扩展性考虑
 
 - **新增角色**: 在 agents/ 下新增定义文件，在 skill 中增加调度步骤
 - **新增流程阶段**: 新增 skill 文件 + .claude/commands/ 引用
@@ -347,26 +392,27 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 
 ---
 
-## 14. PPT 子系统
+## 15. PPT 子系统（output_type=ppt）
 
-独立的 PPT 类 HTML 页面开发能力，通过 `/ppt-dev` 触发，与常规开发流程完全隔离。
+PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程中设置 output_type=ppt 激活。
 
 ### 14.1 架构
 
 ```
-/ppt-dev 触发 → 独立流程（不经过 pdt-init/propose/apply/archive）
-  UX 角色: 版式设计（高保真 wireframe）
-  DE 角色: 精装实现（真实数据 + 图表 + 交互）
-  TE 角色: verify-ppt.sh 硬校验
+/mh-ppt 快捷触发 → 自动设置 output_type=ppt → 进入 /mh-run 主流程
+  主流程集成点:
+    propose 阶段: SA 方案后追加 Designer wireframe 步骤
+    apply 阶段: DE 基于 wireframe 实现，TE 使用 verify-ppt.sh
+    archive 阶段: 额外归档 designer/wireframes/
 ```
 
-### 14.2 UX 角色
+### 14.2 Designer 角色（PPT 模式）
 
 | 项目 | 说明 |
 |------|------|
-| 定义文件 | agents/ux.md |
+| 定义文件 | agents/designer.md |
 | 职责 | 逐页版式设计，产出高保真 HTML wireframe |
-| 输出 | ux/slide-spec.md + ux/wireframes/slide-{NN}.html |
+| 输出 | designer/slide-spec.md + designer/wireframes/slide-{NN}.html |
 | 约束 | 基于 ppt-base.css，禁止覆盖全局变量，禁止技术决策 |
 
 ### 14.3 模板体系
@@ -382,9 +428,9 @@ init 完成后自动执行环境检测，结果写入 `.state.md` 的 `env` 字�
 - 信息密度: 高密度优先，每页承载传统 PPT 2-3 页信息量
 - 字号: 标题 26px，正文 15px，标注 12px
 
-### 14.5 上下文隔离
+### 14.5 与主流程的关系
 
-- 不修改任何现有 skill（pdt-*.md）
-- 不修改任何现有 agent（pm/ba/sa/de/te.md）
-- PPT 相关内容仅在 /ppt-dev 调用时加载
-- 正常开发流程零污染
+- /mh-ppt 是 output_type=ppt 的快捷入口，本质上走主流程
+- PPT 补充规则定义在 skills/mh-ppt.md，主流程在 output_type=ppt 时自动加载
+- Designer 角色仅在 output_type 需要设计制品时参与（由 PM 根据 output_type 决定）
+- verify-ppt.sh 作为 PPT 特有的硬校验脚本，在 TE 审计时调用

@@ -1,9 +1,11 @@
 ---
 handoff_id: "{REQ-ID}-{STEP-ID}-R{N}"
 from: PM
-to: "{BA|SA|DE|TE}"
+to: "{BA|SA|DE|TE|Designer}"
 status: pending
-task_type: "{需求分析|架构设计|编码实现|审计验证|测试用例设计}"
+task_type: "{需求分析|架构设计|编码实现|审计验证|测试用例设计|设计}"
+output_type: "{web-app|backend-api|cli-tool|data-pipeline|infrastructure|documentation|ppt|library|custom}"
+tech_stack: "{language}/{package_manager}"
 created_at: "{YYYY-MM-DDTHH:MM:SSZ}"
 completed_at: ""
 ---
