@@ -38,9 +38,28 @@ completed_at: ""
 ## 完成回报（由执行角色填写）
 
 - status: {done | failed}
+  - `done`: 任务成功完成，所有期望输出已生成
+  - `failed`: 任务失败，无法在当前轮次内完成（附 issues 说明原因）
+- output_files: ["{file_path_1}", "{file_path_2}"]
+  - 实际生成的文件路径列表（必须与"期望输出"对应）
+- summary: "{一句话描述完成情况或失败原因}"
+- issues: "{具体错误信息或阻塞原因，无问题时填 N/A}"
+
+示例（成功）：
+```
+- status: done
+- output_files: ["deliverables/REQ001/sa/design.md"]
+- summary: "架构设计完成，含 3 个 Task 和需求映射表"
+- issues: "N/A"
+```
+
+示例（失败）：
+```
+- status: failed
 - output_files: []
-- summary: ""
-- issues: ""
+- summary: "lint 检查失败，3 次自修未能解决"
+- issues: "ESLint error: no-unused-vars in src/utils.ts:42, 自动修复引入新错误"
+```
 
 ## 轮次信息
 

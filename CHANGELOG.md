@@ -9,7 +9,7 @@
 - **output_type 体系**: 新增产出类型概念（web-app/backend-api/cli-tool/data-pipeline/infrastructure/documentation/ppt/library/custom），与 mode 正交，驱动全流程适配
 - **test_strategy 机制**: TE 验证方式由 test_strategy 参数驱动（e2e/unit/integration/smoke/manual/none），替代原有的 browser_available 二分逻辑
 - **多语言环境检测**: 支持 Python/Node.js/Go/Rust/Java 自动检测（语言、包管理器、测试框架、构建工具、lint 工具）
-- **Designer 角色**: 新增泛化设计师角色（agents/designer.md），根据 output_type 产出不同设计制品
+- **UX 角色**: 新增泛化设计师角色（agents/ux.md），根据 output_type 产出不同设计制品（UI wireframe / API 设计文档 / 数据流图 / 架构拓扑图等）
 
 ### 流程变更
 
@@ -27,9 +27,8 @@
 
 ### 角色变更
 
-- 新增 Designer 角色（agents/designer.md）
-- UX 角色标记为 DEPRECATED（agents/ux.md），兼容已有 handoff
-- 角色隔离规则更新为六角色（PM/BA/SA/DE/TE/Designer）
+- 新增 UX 角色（agents/ux.md），承担泛化设计职责（原 v0.1.0 无设计角色）
+- 角色隔离规则更新为六角色（PM/BA/SA/DE/TE/UX）
 
 ### 命名变更
 

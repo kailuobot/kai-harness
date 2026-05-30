@@ -90,7 +90,7 @@
    ├── .state.md
    └── process.log
    ```
-3. 写入 `deliverables/{REQ-ID}/.state.md`:
+3. 写入 `deliverables/{REQ-ID}/.state.md`（完整 schema 见 `templates/state-template.md`）:
    ```yaml
    req_id: REQ{NNN}
    mode: ""
@@ -98,6 +98,16 @@
    phase: init
    current_step: INIT-1
    current_role: PM
+   current_handoff: ""
+   completed_steps: []
+   auto_advance: false
+   repair_round: 0
+   repair_task: ""
+   sr_status:
+     SR1: pending
+     SR2: pending
+     SR3: pending
+     SR4: pending
    last_updated: "{timestamp}"
    tech_stack:
      language: ""

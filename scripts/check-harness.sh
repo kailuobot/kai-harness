@@ -72,7 +72,7 @@ done
 # 5. 校验脚本自身
 echo ""
 echo "--- 校验脚本 ---"
-scripts=(verify.sh baseline.sh check-harness.sh)
+scripts=(verify.sh baseline.sh check-harness.sh verify-ppt.sh)
 for script in "${scripts[@]}"; do
     f="scripts/$script"
     if [ -s "$f" ]; then
@@ -98,7 +98,7 @@ dirs=(
     "reference"
     "deliverables"
     "spec"
-    "output/final"
+    "output"
 )
 for d in "${dirs[@]}"; do
     if [ -d "$d" ]; then

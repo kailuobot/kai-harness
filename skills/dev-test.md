@@ -2,6 +2,8 @@
 
 DE 开发自测标准操作规程。编码完成后、提交回报前必须执行。
 
+**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
+
 ---
 
 ## 触发时机
@@ -28,7 +30,6 @@ DE 完成编码实现后，在填写 code-report.md 之前执行。
 
 跳过条件：
 - test_strategy=none 或 test_strategy=manual: 跳过此步，记录 "测试跳过（test_strategy={value}）"
-- output_type=documentation: 跳过此步
 
 执行后记录结果：通过数 / 失败数 / 跳过数。如有失败：修复代码，重新运行。
 
@@ -61,7 +62,7 @@ DE 完成编码实现后，在填写 code-report.md 之前执行。
 | unknown | .state.md tech_stack.build_tool | 读取用户指定的命令；如无则跳过 |
 
 跳过条件：
-- output_type=documentation: 跳过构建步骤，记录 "构建跳过（documentation 类型无需构建）"
+- test_strategy=manual 或 test_strategy=none: 跳过构建步骤，记录 "构建跳过（test_strategy={value}，无需自动化构建验证）"
 
 ## Step 4: 自检清单
 
@@ -92,4 +93,6 @@ DE 完成编码实现后，在填写 code-report.md 之前执行。
 ## 失败处理
 
 - 任何一步失败：修复后从该步重新执行
-- 修复 3 次仍失败：在 handoff 回报中标记 status=failed，附带错误日志
+- DE 内部自修最多 3 次（子循环）：超出后在 handoff 回报中标记 status=failed，附带错误日志
+- 此 3 次限制是 DE 角色内部的自修上限；PM 层面的修复循环最多 5 轮（见 mh-apply.md）
+- 即：每轮 PM 派发修复时，DE 内部最多尝试 3 次自修；若仍失败则回报 PM，PM 决定是否继续下一轮

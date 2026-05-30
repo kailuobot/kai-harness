@@ -69,6 +69,7 @@
 | SA | 架构设计 | 需求分析、编码、调度 |
 | DE | 编码实现 | 设计、需求定义、调度 |
 | TE | 审计验证 | 开发、设计、调度 |
+| UX | 视觉/结构设计 | 编码、需求分析、技术决策 |
 
 ---
 
@@ -110,18 +111,24 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 
 ### 5.1 .state.md
 
-流程状态的唯一真相源。字段：
+流程状态的唯一真相源（完整 schema 见 `templates/state-template.md`）。字段：
 
 | 字段 | 用途 |
 |------|------|
 | req_id | 当前需求编号 |
 | mode | 执行模式（fast/standard/full） |
-| phase | 当前阶段（init/propose/apply/archive） |
+| output_type | 产出类型（web-app/backend-api/cli-tool/...） |
+| phase | 当前阶段（init/propose/apply/archive/done） |
 | current_step | 当前步骤 ID |
 | current_handoff | 当前活跃 handoff 文件名 |
 | current_role | 当前执行角色 |
 | completed_steps | 已完成步骤列表 |
+| auto_advance | 是否处于 /mh-run 自动推进模式 |
+| repair_round | 当前修复轮次（0=未修复，1-5=修复中） |
+| repair_task | 当前修复的任务标识 |
 | sr_status | 各审批节点状态 |
+| tech_stack | 技术栈信息（language/package_manager/test_framework/build_tool/lint_tool） |
+| test_strategy | 验证策略（e2e/unit/integration/smoke/manual/none） |
 | last_updated | 最后更新时间戳（用于断点恢复超时检测） |
 | env | 环境信息（browser_available 等） |
 
@@ -238,8 +245,8 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 | 阶段 | fast | standard | full |
 |------|------|----------|------|
 | init | 完整 | 完整 | 完整 |
-| propose | PM 直接编排 plan-action | SA 简版设计 + TE 测试用例 + PM 编排 | BA→SA→TE→PM 编排→SR1 |
-| apply | DE 批量开发→TE 轻量审计→人工确认 | 逐任务循环→SR2→最终审计→SR3 | 同 standard |
+| propose | PM 直接编排 plan-action | (SA ∥ TE) 并行 + PM 编排 | BA → (SA ∥ TE) 并行 → PM 编排 → SR1 |
+| apply | DE 批量开发→TE 轻量审计→人工确认 | 并行批次循环→SR2→最终审计→SR3 | 同 standard |
 | archive | 直接归档，跳过 SR4 | 简化 SR4（一句确认） | 完整 SR4 归档摘要 |
 
 ### 8.3 Fast 模式连续流
@@ -320,7 +327,7 @@ init 完成后自动执行技术栈检测，结果写入 `.state.md` 的 `tech_s
 
 变更归档（spec/ 已有文件时）按以下规则合并：
 
-### 10.1 新增内容
+### 11.1 新增内容
 
 追加到 spec 文件末尾，用注释标注来源：
 ```
@@ -329,18 +336,18 @@ init 完成后自动执行技术栈检测，结果写入 `.state.md` 的 `tech_s
 <!-- REQ-{ID} END -->
 ```
 
-### 10.2 修改内容
+### 11.2 修改内容
 
 定位到对应 REQ-ID 标注的段落，替换该段落内容，更新注释标注。
 
-### 10.3 删除内容
+### 11.3 删除内容
 
 不物理删除原文，在对应段落开头添加：
 ```
 [DEPRECATED by REQ-{ID}] — {废弃原因}
 ```
 
-### 10.4 版本备份
+### 11.4 版本备份
 
 归档前自动备份当前 spec/ 到 `spec/baselines/`：
 - `spec/baselines/requirement-spec.v{N}.md`
@@ -383,7 +390,76 @@ init 完成后自动执行技术栈检测，结果写入 `.state.md` 的 `tech_s
 
 ---
 
-## 14. 扩展性考虑
+## 14. 并行执行机制
+
+### 14.1 设计目标
+
+减少串行等待时间，在保持角色隔离和审批节点不变的前提下，最大化并行度。
+
+### 14.2 平台适配
+
+| 平台 | 并行能力 | 退化行为 |
+|------|---------|---------|
+| Claude Code | SubAgent 物理并行（多个独立上下文同时执行） | — |
+| Cline | 不支持并行（单线程） | 自动退化为串行执行 |
+
+### 14.3 Propose 阶段并行
+
+**standard 模式：** SA ∥ TE 并行
+```
+proposal.md ──┬──> SA（架构设计）──┐
+              └──> TE（测试用例）──┤──> PM 编排
+```
+
+**full 模式：** BA → (SA ∥ TE) 并行
+```
+proposal.md ──> BA（需求分析）──┬──> SA（架构设计）──┐
+                               └──> TE（测试用例）──┤──> PM 编排 → SR1
+```
+
+**关键决策：** TE 不依赖 SA 的 design.md，而是直接基于 proposal（standard）或 requirement-spec（full）设计测试用例。这牺牲了少量测试精度（TE 无法参考架构细节），换取约 40-50% 的 propose 阶段时间节省。
+
+### 14.4 Apply 阶段并行批次
+
+```
+plan-action.md 中的 Task 依赖图:
+
+  Task-1 [deps: none] ──┐
+  Task-2 [deps: none] ──┤──> Batch-1（并行开发 + 并行审计）
+  Task-3 [deps: Task-1] ──> Batch-2（等 Batch-1 完成后并行）
+  Task-4 [deps: Task-1, Task-2] ──> Batch-2
+```
+
+**执行流程：**
+1. PM 在 propose 阶段编排 plan-action.md 时标注 `[deps: ...]`
+2. Apply 阶段按依赖关系计算批次
+3. 同批次内的 Task 并行派发 DE → 并行派发 TE → 批量人工确认
+4. 批次间串行（后序批次依赖前序批次的产出代码）
+
+**依赖判断标准：**
+- 代码级依赖（Task-B 调用 Task-A 的函数/模块）→ 标记依赖
+- 逻辑关联但代码独立 → 不标记依赖
+- 不确定时 → 不标记（宁可并行，由 TE 审计兜底）
+
+### 14.5 并行修复循环
+
+同一批次内多个 Task 审计失败时，可并行派发修复：
+- 每个失败 Task 独立进入修复循环
+- 各自最多 5 轮（互不影响）
+- 全部通过后统一进入人工确认
+
+### 14.6 状态管理
+
+并行执行时 `.state.md` 的 `current_step` 使用复合值：
+- `REQ-2+REQ-3`（SA 和 TE 并行中）
+- `DEV-1.B{N}`（Batch-N 开发中）
+- `TEST-1.B{N}`（Batch-N 审计中）
+
+断点恢复时，PM 检测到复合 step 值，重新派发该批次中未完成的 Task。
+
+---
+
+## 15. 扩展性考虑
 
 - **新增角色**: 在 agents/ 下新增定义文件，在 skill 中增加调度步骤
 - **新增流程阶段**: 新增 skill 文件 + .claude/commands/ 引用
@@ -392,11 +468,11 @@ init 完成后自动执行技术栈检测，结果写入 `.state.md` 的 `tech_s
 
 ---
 
-## 15. PPT 子系统（output_type=ppt）
+## 16. PPT 子系统（output_type=ppt）
 
 PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程中设置 output_type=ppt 激活。
 
-### 14.1 架构
+### 16.1 架构
 
 ```
 /mh-ppt 快捷触发 → 自动设置 output_type=ppt → 进入 /mh-run 主流程
@@ -406,7 +482,7 @@ PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程�
     archive 阶段: 额外归档 ux/wireframes/
 ```
 
-### 14.2 UX 角色（PPT 模式）
+### 16.2 UX 角色（PPT 模式）
 
 | 项目 | 说明 |
 |------|------|
@@ -415,7 +491,7 @@ PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程�
 | 输出 | ux/slide-spec.md + ux/wireframes/slide-{NN}.html |
 | 约束 | 基于 ppt-base.css，禁止覆盖全局变量，禁止技术决策 |
 
-### 14.3 模板体系
+### 16.3 模板体系
 
 - 基础样式（深色暖调）: `templates/ppt-base.css`（16:9 约束 + 深色配色 + 组件类）
 - 基础样式（白底商务）: `templates/ppt-light.css`（16:9 约束 + 白底蓝橙配色 + 迷你图表组件）
@@ -423,7 +499,7 @@ PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程�
 - 版式库（深色）: `templates/ppt-templates/layouts/L{NN}-{name}.html`（12 套高密度版式）
 - 版式库（白底）: `templates/ppt-templates/layouts/W{NN}-{name}.html`（5 套高密度版式）
 
-### 14.4 设计规范
+### 16.4 设计规范
 
 **通用约束：**
 - 视口: 1920×1080（16:9）
@@ -438,7 +514,7 @@ PPT 类 HTML 页面开发能力，通过 `/mh-ppt` 快捷触发或在主流程�
 - 字号: 标题 24px，正文 14px，标注 11px
 - 特色: 纯 CSS 迷你图表（环形图/柱状图/进度条/趋势线）、紧凑卡片系统、蓝色竖条分区
 
-### 14.5 与主流程的关系
+### 16.5 与主流程的关系
 
 - /mh-ppt 是 output_type=ppt 的快捷入口，本质上走主流程
 - PPT 补充规则定义在 skills/mh-ppt.md，主流程在 output_type=ppt 时自动加载

@@ -17,8 +17,10 @@
 ## 断点续作
 
 1. 读取 `deliverables/{REQ-ID}/.state.md` 中 completed_steps
-2. 跳过已完成的 Task，从未完成的 Task 继续
-3. `[PM] 断点恢复，从 {step_id} 继续`
+2. 读取 `repair_round` 和 `repair_task` 字段，恢复修复循环上下文
+3. 跳过已完成的 Task，从未完成的 Task 继续
+4. 如 repair_round > 0，从修复循环的当前轮次继续（而非从第 1 轮重新开始）
+5. `[PM] 断点恢复，从 {step_id} 继续（repair_round={N}）`
 
 ---
 
@@ -74,38 +76,61 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
 
 ## standard 模式
 
-逐任务循环（DE→TE→人工确认）→ SR2 → 最终审计 → SR3。
+并行批次开发（按依赖分批）→ SR2 → 最终审计 → SR3。
 
-**Step 1: 逐任务开发+审计循环**
+**Step 1: 并行批次开发+审计**
 
-⚠️ 每个任务必须走完 DE开发→TE审计→人工确认 后，才能开始下一个任务。
+> ⚡ 并行优化：无依赖的 Task 同批并行开发和审计。仅 Claude Code 模式支持并行；Cline 模式退化为逐任务串行。
 
 ```
-FOR 每个待开发任务 IN plan-action.md（跳过已完成）:
-    DE 开发 → TE 审计（失败则修复，最多5轮）→ 人工确认
-    → 清洗上下文，继续下一个任务
+读取 plan-action.md 中的 Task 列表和依赖关系（[deps: ...]）
+计算并行批次:
+  Batch-1: 所有 deps=none 的 Task
+  Batch-2: 依赖仅在 Batch-1 中的 Task
+  Batch-N: 依赖仅在前序 Batch 中的 Task
+  （无依赖标注时，所有 Task 视为 deps=none，归入同一批次）
+
+FOR 每个 Batch（跳过已完成的 Task）:
+    并行派发 Batch 内所有 Task 给 DE
+    等待所有 DE 完成
+    并行派发 Batch 内所有 Task 给 TE 审计
+    等待所有 TE 完成
+    对失败的 Task 进入修复循环（可并行修复）
+    人工批量确认本批次
+    记入 completed_steps
 END FOR
 ```
 
-对每个 Task-{N}：
+对每个 Batch-{B}：
 
-1. `[PM] 启动 DEV-1.{N}，派发 Task-{N} 给 DE`
-2. 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R1.md`
+1. `[PM] 启动 Batch-{B}，包含 Task: {列表}，并行派发给 DE`
+2. 为 Batch 内每个 Task-{N} 写入 handoff:
+   - `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R1.md`
    - to: DE
-   - 白名单: `deliverables/{REQ-ID}/sa/design.md`（Task-{N} 部分）, 已有代码
+   - 白名单: `deliverables/{REQ-ID}/sa/design.md`（Task-{N} 部分）, 已有代码, 前序 Batch 产出代码
    - 期望输出: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/de/code-report.md`
-3. 派发任务给 DE
-4. DE 完成后，派发 TE 审计:
-   - 写入 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
-   - 读取 .state.md 中 test_strategy:
-     - test_strategy=e2e 且 env.browser_available=true: TE 执行完整审计（含 E2E）
-     - test_strategy=e2e 且 env.browser_available=false: TE 执行工程验证，跳过 E2E，标注 `[E2E DEGRADED]`
-     - test_strategy=unit/integration/smoke: TE 执行对应级别测试 + 工程验证
-     - test_strategy=manual: TE 生成人工验证清单，标注 `[MANUAL VERIFICATION REQUIRED]`
-     - test_strategy=none: TE 仅执行工程验证（lint + 构建）
-5. 审计结果:
-   - PASS → 人工确认该任务 → 记入 completed_steps → 下一个 Task
-   - FAIL → 修复循环（最多5轮）
+3. 并行派发:
+   - [Claude Code] 同时 spawn 多个 DE SubAgent，每个处理一个 Task
+   - [Cline] 逐个串行执行
+4. 等待所有 DE 完成，校验各自输出文件存在性
+5. `[PM] Batch-{B} 开发完成，并行派发 TE 审计`
+6. 为 Batch 内每个 Task-{N} 写入 TE handoff:
+   - `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
+   - 读取 .state.md 中 test_strategy 执行对应验证
+7. 并行派发:
+   - [Claude Code] 同时 spawn 多个 TE SubAgent
+   - [Cline] 逐个串行执行
+8. 等待所有 TE 完成，汇总审计结果:
+   - 全部 PASS → 人工批量确认本批次
+   - 部分 FAIL → 失败的 Task 进入修复循环（可并行修复），通过的 Task 等待
+9. 人工批量确认:
+   ```
+   [人工确认 Batch-{B}]
+   通过的 Task: {列表}
+   审计报告: deliverables/{REQ-ID}/te/temp-test-report.md
+   请确认: 通过 / 驳回（指定 Task 和原因）
+   ```
+10. 确认通过 → 记入 completed_steps → 下一个 Batch
 
 **Step 2: SR2 功能评审**
 
@@ -154,10 +179,12 @@ END FOR
 ## 修复循环（所有模式通用）
 
 1. `[PM] Task-{N} 审计失败（轮次 {R}/5），派发修复给 DE`
-2. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
+2. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
+3. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
    - 附加: 上轮失败原因、失败报告路径
-3. DE 修复 → TE 重新审计
-4. 轮次达 5 次仍失败: `[PM] Task-{N} 超过最大重试次数，上升人工审核`
+4. DE 修复 → TE 重新审计
+5. 审计通过: 更新 `deliverables/{REQ-ID}/.state.md`: repair_round=0, repair_task=""
+6. 轮次达 5 次仍失败: `[PM] Task-{N} 超过最大重试次数，上升人工审核`
 
 ## 异常处理
 

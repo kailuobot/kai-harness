@@ -81,14 +81,14 @@ done
 echo ""
 echo "=== 产出物归档一致性 ==="
 
-if [ -d "output/final" ] && [ -n "$req_id" ] && [ -d "$REQ_DIR/output" ]; then
-    # 检查 output/final 中的文件是否都能在 deliverables/{REQ-ID}/output 中找到来源
+if [ -d "output" ] && [ -n "$req_id" ] && [ -d "$REQ_DIR/output" ]; then
+    # 检查 output 中的文件是否都能在 deliverables/{REQ-ID}/output 中找到来源
     local_errors=0
-    for final_file in $(find "output/final" -type f 2>/dev/null); do
-        relative="${final_file#output/final/}"
+    for final_file in $(find "output" -type f 2>/dev/null); do
+        relative="${final_file#output/}"
         source_file="$REQ_DIR/output/$relative"
         if [ ! -f "$source_file" ]; then
-            echo "WARN: output/final/$relative 无对应源文件"
+            echo "WARN: output/$relative 无对应源文件"
             local_errors=$((local_errors + 1))
         fi
     done

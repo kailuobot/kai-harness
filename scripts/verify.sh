@@ -7,7 +7,7 @@ set -euo pipefail
 
 DELIVERABLES_DIR="deliverables"
 SPEC_DIR="spec"
-OUTPUT_DIR="output/final"
+OUTPUT_DIR="output"
 ERRORS=0
 
 check_type="${1:-all}"
@@ -206,14 +206,49 @@ check_c() {
         return
     fi
 
+    # .state.md 必填字段校验
+    local required_fields="req_id mode phase current_step current_role last_updated"
+    for field in $required_fields; do
+        if ! grep -q "^${field}:" "$REQ_DIR/.state.md" 2>/dev/null; then
+            echo "FAIL: .state.md 缺少必填字段: $field"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done
+
+    # phase 与产物一致性校验
+    local phase
+    phase=$(grep "^phase:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+    local mode
+    mode=$(get_mode)
+
+    if [ "$phase" = "apply" ] || [ "$phase" = "archive" ] || [ "$phase" = "done" ]; then
+        if [ ! -s "$REQ_DIR/plan-action.md" ]; then
+            echo "FAIL: phase=$phase 但 plan-action.md 缺失（propose 阶段产物不完整）"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+
+    if [ "$phase" = "done" ]; then
+        if [ ! -d "$OUTPUT_DIR" ] || [ -z "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]; then
+            echo "FAIL: phase=done 但 $OUTPUT_DIR/ 为空（归档未完成）"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+
+    # Handoff 文件统计
     local handoff_dir="$REQ_DIR/handoffs"
     if [ -d "$handoff_dir" ]; then
         local handoff_count
         handoff_count=$(find "$handoff_dir" -name "*.md" -not -name ".*" | wc -l)
         echo "INFO: 共 $handoff_count 个 handoff 文件"
+
+        # fast 模式至少 2 个 handoff（DEV + TEST），standard/full 至少有 propose 阶段的 handoff
+        if [ "$mode" = "fast" ] && [ "$phase" = "done" ] && [ "$handoff_count" -lt 2 ]; then
+            echo "WARN: fast 模式 phase=done 但 handoff 数量不足（期望 ≥2，实际 $handoff_count）"
+        fi
     fi
 
-    echo "PASS: 流程一致性基础检查"
+    echo "PASS: 流程一致性检查完成"
 }
 
 # 执行检查

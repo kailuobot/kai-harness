@@ -64,9 +64,11 @@
 ## 5. 断点恢复
 
 - PM 恢复时仅依据 .state.md 和 handoff 文件状态，禁止依赖对话历史
-- .state.md 是流程状态的唯一真相源
+- .state.md 是流程状态的唯一真相源（完整 schema 见 `templates/state-template.md`）
 - 每次更新 .state.md 必须同步更新 last_updated 时间戳
+- 修复循环中每轮开始时必须更新 repair_round 字段，任务通过后重置为 0
 - 恢复时如 handoff 为 pending 且 last_updated 超过 30 分钟，自动重新派发
+- 恢复时必须读取 repair_round 字段，避免重复修复或超限
 
 ## 6. 平台适配
 

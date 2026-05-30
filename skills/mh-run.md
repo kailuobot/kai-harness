@@ -23,7 +23,7 @@
 |---|---|
 | current_step=INIT-DONE | `[PM] ✦ 自动推进 → propose 阶段` 然后读取并执行 skills/mh-propose.md |
 | current_step=PROPOSE-DONE（fast/standard）或 SR1 通过（full） | `[PM] ✦ 自动推进 → apply 阶段` 然后读取并执行 skills/mh-apply.md |
-| current_step=SR3-DONE | `[PM] ✦ 自动推进 → archive 阶段` 然后读取并执行 skills/mh-archive.md |
+| current_step=SR3-DONE | `[PM] ✦ 自动推进 → archive 阶段`，重置 repair_round=0, repair_task=""，然后读取并执行 skills/mh-archive.md |
 | phase=done | `[PM] ✦ 全流程完成` 打印最终摘要 |
 
 ---
@@ -47,7 +47,7 @@
 |---|---|
 | current_step=INIT-DONE | 自动推进 → propose（无暂停） |
 | current_step=PROPOSE-DONE | 自动推进 → apply（无暂停，跳过 SR1） |
-| Apply 人工确认通过 | 自动推进 → archive（无暂停，跳过 SR4） |
+| Apply 人工确认通过 | 自动推进 → archive（无暂停，跳过 SR4），重置 repair_round=0, repair_task="" |
 | phase=done | 打印最终摘要 |
 
 ---

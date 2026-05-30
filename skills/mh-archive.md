@@ -109,6 +109,8 @@
 
 ## CHANGE 模式特殊处理
 
+> 注：`spec/baselines/` 存放的是归档版本历史（每次变更归档前的快照），与 `deliverables/{REQ-ID}/baselines/`（propose 阶段 SR1 通过时的过程快照）不同。前者用于归档回溯，后者用于 SR1 驳回时回退。
+
 1. 归档前自动备份当前 spec/ 到 spec/baselines/
    - spec/baselines/requirement-spec.v{N}.md
    - spec/baselines/design.v{N}.md
