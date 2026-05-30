@@ -23,7 +23,7 @@ PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 outp
 | clarify | 自动设置 output_type=ppt, test_strategy=manual |
 | propose | SA 方案后追加 UX wireframe 步骤 + 用户审批 wireframe |
 | apply | DE 基于 wireframe 实现，TE 使用 verify-ppt.sh 校验 |
-| archive | 额外归档 ux/wireframes/ → output/final/wireframes/ |
+| archive | 额外归档 ux/wireframes/ → output/wireframes/ |
 
 ---
 

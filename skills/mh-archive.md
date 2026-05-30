@@ -54,19 +54,21 @@
 
 | output_type | 归档源 | 归档目标 | 额外归档 |
 |-------------|--------|---------|---------|
-| ppt | output/ | output/final/ | ux/wireframes/ → output/final/wireframes/ |
-| web-app | output/ | output/final/ | — |
-| backend-api | output/ | output/final/ | — |
-| cli-tool | output/ | output/final/ | — |
-| library | output/ | output/final/ | — |
-| data-pipeline | output/ | output/final/ | — |
-| infrastructure | output/ | output/final/ | — |
-| documentation | output/ | output/final/ | — |
-| custom | output/ | output/final/ | 由 plan-action.md 指定 |
+| ppt | deliverables/{REQ-ID}/output/ | output/ | deliverables/{REQ-ID}/ux/wireframes/ → output/wireframes/ |
+| web-app | deliverables/{REQ-ID}/output/ | output/ | — |
+| backend-api | deliverables/{REQ-ID}/output/ | output/ | — |
+| cli-tool | deliverables/{REQ-ID}/output/ | output/ | — |
+| library | deliverables/{REQ-ID}/output/ | output/ | — |
+| data-pipeline | deliverables/{REQ-ID}/output/ | output/ | — |
+| infrastructure | deliverables/{REQ-ID}/output/ | output/ | — |
+| documentation | deliverables/{REQ-ID}/output/ | output/ | — |
+| custom | deliverables/{REQ-ID}/output/ | output/ | 由 plan-action.md 指定 |
+
+> 注：归档目标 `output/` 是项目根目录下与 `deliverables/` 平级的目录。
 
 4. 首次归档: 直接复制全部文件
 5. 变更归档: 覆盖已有同名文件，保留不冲突的已有文件
-6. 校验 `output/final/` 非空
+6. 校验根目录 `output/` 非空
 7. `[PM] ARC-3 完成`
 
 ## Step SR4: 项目结项确认（人工审批）
@@ -90,7 +92,7 @@
    - 产出类型: {output_type}
    - 需求规格: spec/requirement-spec.md
    - 技术设计: spec/design.md
-   - 最终产物: output/final/ 文件清单
+   - 最终产物: output/ 文件清单
    - 本次需求编号: {REQ-ID}
 3. 等待用户决策：
    - **确认结项**:

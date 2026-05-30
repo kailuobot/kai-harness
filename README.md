@@ -169,7 +169,7 @@ output_type 与 mode（fast/standard/full）正交：mode 控制流程严谨度�
 | ------ | ---------------- | ------------------ | ------------------------------------- | -------------------------- |
 | ARC-1  | 需求归档         | PM                 | `deliverables/{REQ-ID}/ba/requirement-spec.md` | `spec/requirement-spec.md` |
 | ARC-2  | 设计归档         | PM                 | `deliverables/{REQ-ID}/sa/design.md`           | `spec/design.md`           |
-| ARC-3  | 代码归档         | PM                 | `deliverables/{REQ-ID}/output/`        | `output/final/`          |
+| ARC-3  | 代码归档         | PM                 | `deliverables/{REQ-ID}/output/`        | `output/`          |
 | SR4    | **项目结项确认** | PM（人机交互决策） |                                       |                            |
 
 ---
@@ -249,12 +249,12 @@ output_type 与 mode（fast/standard/full）正交：mode 控制流程严谨度�
 - 检测归档模式：
   - **首次归档**（spec/ 为空）：直接复制需求、设计、代码到归档目录
   - **变更归档**（spec/ 已有文件）：将变更内容 merge 到现有 spec 文件
-- 将代码归档到 output/final/
+- 将代码归档到 output/
 - 呈现归档摘要供用户确认结项（SR4）
 
 **查看最终成果**
 
-归档完成后，最终产物位于 `output/final/` 目录。
+归档完成后，最终产物位于 `output/` 目录。
 
 ### 用户触发方式
 

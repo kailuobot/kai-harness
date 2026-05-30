@@ -111,7 +111,7 @@ PM 恢复时检测 `deliverables/{REQ-ID}/.state.md` 中 `auto_advance: true`：
 归档产物:
   - spec/requirement-spec.md（full模式）
   - spec/design.md（standard/full模式）
-  - output/final/*
+  - output/*
 项目状态: DONE
 ══════════════════════════════════════
 ```

@@ -205,7 +205,7 @@ REQ001-DEV1-T2-R3.md # REQ001 的 DEV-1 步骤，Task2，第3轮修复
 │       ├── output/            # 开发产出物
 │       └── baselines/         # 基线快照
 ├── spec/                      # 用户项目归档规格
-└── output/final/              # 最终交付物
+└── output/                    # 最终交付物
 ```
 
 ---
