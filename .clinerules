@@ -1,17 +1,10 @@
-# Cline Rules（与 CLAUDE.md 同源）
+# Cline Rules
 
-本文件为 Cline 插件提供全局规则，核心规则与 CLAUDE.md 保持一致，附加 Cline 特有的角色切换协议。
+核心纪律与 CLAUDE.md 完全一致，本文件仅补充 Cline 环境特有的协议。
 
-## 角色
+> 全局纪律（流程/角色隔离/产物保护/自检/断点恢复/平台适配/产出类型）见 CLAUDE.md
 
-| 角色 | 职责 | 定义文件 |
-|------|------|---------|
-| PM | 调度、检查、人机交互 | agents/pm.md |
-| BA | 需求分析 | agents/ba.md |
-| SA | 架构设计 | agents/sa.md |
-| DE | 编码实现 | agents/de.md |
-| TE | 审计验证 | agents/te.md |
-| UX | 视觉/结构设计 | agents/ux.md |
+---
 
 ## 命令识别
 
@@ -28,65 +21,7 @@
 
 ---
 
-## 1. 流程纪律
-
-- 严格按 clarify → propose → apply → archive 顺序执行，禁止跳步
-- 每步结束必须返回 PM，PM 检查通过后才启动下一步
-- 禁止跳过人工审批节点（SR1/SR2/SR3/SR4）
-- PM 每次调度前必须打印心跳：`[PM] {动作描述}`
-- /mh-run 模式下允许阶段间自动推进，但阶段内审批节点仍禁止跳过
-
-## 2. 角色隔离
-
-- 六个角色（PM/BA/SA/DE/TE/UX）职责严格分离，禁止越权
-- 角色间信息传递必须经 PM 中转，通过 handoff 文件实现
-- 非 PM 角色仅读取 handoff 白名单中的文件
-- 非 PM 角色禁止引用对话历史中其他角色的推理或产出
-- 非 PM 角色完成后仅报告文件路径，不展开产物内容
-
-## 3. 产物保护
-
-- 禁止修改上游制品（已交付的 handoff、已审批的 baseline）
-- handoff 文件不可修改，重试创建新文件（追加轮次后缀）
-- 归档后的 spec/ 文件仅通过 CHANGE 模式的 merge 流程修改
-
-## 4. 自检纪律
-
-- 任何文件写入后必须验证文件存在且非空
-- DE 编码后必须执行 dev-test skill（根据 tech_stack 路由测试命令）
-- TE 审计根据 test_strategy 选择验证方法；E2E 环境不可用时降级并标注
-- 交付判定依赖脚本退出码，不依赖 Agent 自述
-
-## 5. 断点恢复
-
-- PM 恢复时仅依据 .state.md 和 handoff 文件状态，禁止依赖对话历史
-- .state.md 是流程状态的唯一真相源
-- 每次更新 .state.md 必须同步更新 last_updated 时间戳
-- 恢复时如 handoff 为 pending 且 last_updated 超过 30 分钟，自动重新派发
-
-## 6. 产出类型体系（output_type）
-
-框架支持任意类型的需求开发，通过 output_type 参数驱动流程适配：
-
-| output_type | 说明 | 默认 test_strategy |
-|-------------|------|-------------------|
-| web-app | Web 应用（前端/全栈） | e2e / integration |
-| backend-api | 后端服务/API | integration |
-| cli-tool | 命令行工具 | integration |
-| data-pipeline | 数据管道/ETL | smoke |
-| infrastructure | 基础设施代码 | smoke |
-| documentation | 文档/规格 | manual |
-| ppt | 演示文稿/HTML slides | manual |
-| library | 库/SDK | unit |
-| custom | 自定义 | 用户指定 |
-
-- output_type 与 mode 正交：mode 控制流程严谨度，output_type 控制产出物类型和验证方式
-- output_type 在 clarify 阶段确定，写入 .state.md，贯穿全流程
-- 各角色根据 output_type 和 tech_stack 选择对应的工具和验证方法
-
----
-
-## 7. 角色切换（Cline 特有）
+## 角色切换（Cline 特有）
 
 Cline 环境下无 SubAgent 能力，角色隔离通过以下方式实现：
 
@@ -96,7 +31,7 @@ Cline 环境下无 SubAgent 能力，角色隔离通过以下方式实现：
 4. 完成后输出：`[角色完成: {role}] 输出文件: {path}`，回到 PM 角色
 5. PM 读取输出文件进行校验，决定下一步
 
-## 8. 辅助 Skill
+## 辅助 Skill
 
 - DE 编码后执行: skills/dev-test.md（根据 tech_stack 路由测试命令）
 - dev-test 通过后执行: skills/post-verify.md

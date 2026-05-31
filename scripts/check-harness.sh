@@ -119,6 +119,13 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
+if [ -s "templates/logging-standard.md" ]; then
+    echo "PASS: 日志规则模板"
+else
+    echo "FAIL: 日志规则模板缺失"
+    ERRORS=$((ERRORS + 1))
+fi
+
 # 8. PPT 子系统
 echo ""
 echo "--- PPT 子系统 ---"

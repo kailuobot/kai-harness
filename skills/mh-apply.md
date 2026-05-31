@@ -2,7 +2,7 @@
 
 开发实现 → 审计验证 → 人工审批。按 mode 裁剪步骤。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
+**日志规则：** 见 `templates/logging-standard.md`
 
 ---
 

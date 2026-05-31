@@ -1,5 +1,7 @@
 # Mini-Harness 设计文档
 
+> ⚠️ 执行权威为 skills/*.md 和 agents/*.md。本文档为设计参考，如有冲突以 skills/agents 为准。
+
 ## 1. 设计目标
 
 为 PSDT 超级智能体搭建基础 Workflow 框架，实现：

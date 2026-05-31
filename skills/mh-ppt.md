@@ -3,7 +3,7 @@
 PPT 类 HTML 页面开发。可通过 `/mh-ppt` 快捷触发（自动设置 output_type=ppt 并执行 /mh-run），
 也可在主流程中当 output_type=ppt 时自动加载本补充规则。
 
-**日志规则：** 每个步骤执行前后必须追加日志到 `deliverables/{REQ-ID}/process.log`，格式：`[{timestamp}] [{角色}] {事件描述}`。timestamp 获取方式：优先使用 `date -u +%Y-%m-%dT%H:%M:%SZ`；如 date 命令不可用，使用递增序号 `#NNN`。
+**日志规则：** 见 `templates/logging-standard.md`
 
 ---
 

@@ -27,6 +27,9 @@ predictive/
 prompt-library/
 swarm/
 
+# PPT 参考样本（不属于框架）
+templates/ppt-templates/act-files/
+
 # 系统文件
 .DS_Store
 node_modules/
