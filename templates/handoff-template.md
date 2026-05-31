@@ -54,7 +54,9 @@ completed_at: ""
 
 - status: {done | failed}
 - output_files: ["{file_path}"]
+- read_files: ["{实际读取的文件路径}"]
 - summary: "{一句话描述}"
 - issues: "{错误信息或 N/A}"
 
 > 回报格式示例见 `templates/handoff-examples.md`
+> PM 验收时将 read_files 与白名单对比，不匹配则驳回。

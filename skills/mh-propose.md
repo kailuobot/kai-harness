@@ -56,14 +56,11 @@
 5. 并行派发任务:
    - [Claude Code] 同时 spawn 两个 SubAgent（SA + TE），各自注入对应 handoff + agent 定义 + 白名单文件
    - [Cline] 串行执行：先 SA 后 TE（Cline 不支持并行）
-6. 等待所有回报，执行质量门禁:
+6. 等待所有回报，执行质量门禁（agents/pm.md "SA 产出验收" + "TE 产出验收"清单）:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
-   - SA 质量门禁：打开 `agents/pm.md` "SA 产出验收"清单，逐项核对：
-     - 对照表覆盖完整？Tasks 有依赖标注？每个 Task 有验证方式？粒度合理？
-   - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
    - 全部通过 → 继续
-   - 任一不通过 → 写新 handoff 驳回对应角色，附带：未通过的检查项 + 具体位置 + 修正方向
+   - 不通过 → 驳回对应角色（新 handoff 附未通过项 + 位置 + 修正方向）
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 
@@ -95,12 +92,10 @@
 4. 派发任务:
    - [Claude Code] spawn SubAgent，注入 handoff + agents/ba.md + 白名单文件
    - [Cline] 切换角色为 BA，指示读取 handoff
-5. 接收回报，执行质量门禁:
+5. 接收回报，执行质量门禁（agents/pm.md "BA 产出验收"清单）:
    - `deliverables/{REQ-ID}/ba/requirement-spec.md` 存在且非空
-   - BA 质量门禁：打开 `agents/pm.md` "BA 产出验收"清单，逐项核对：
-     - 每条需求有 SHALL+GWT？无模糊量词？需求间无矛盾？
    - 全部通过 → 继续
-   - 任一不通过 → 写新 handoff 驳回，附带：未通过的检查项 + 具体位置 + 修正方向
+   - 不通过 → 驳回（新 handoff 附未通过项 + 位置 + 修正方向）
 6. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 7. `[PM] REQ-1 完成，需求规格已生成`
 
@@ -121,14 +116,11 @@
 5. 并行派发任务:
    - [Claude Code] 同时 spawn 两个 SubAgent（SA + TE），各自注入对应 handoff + agent 定义 + 白名单文件
    - [Cline] 串行执行：先 SA 后 TE
-6. 等待所有回报，执行质量门禁:
+6. 等待所有回报，执行质量门禁（agents/pm.md "SA 产出验收" + "TE 产出验收"清单）:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
-   - SA 质量门禁：打开 `agents/pm.md` "SA 产出验收"清单，逐项核对：
-     - 对照表覆盖完整？Tasks 有依赖标注？每个 Task 有验证方式？粒度合理？
-   - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
    - 全部通过 → 继续
-   - 任一不通过 → 写新 handoff 驳回对应角色，附带：未通过的检查项 + 具体位置 + 修正方向
+   - 不通过 → 驳回对应角色（新 handoff 附未通过项 + 位置 + 修正方向）
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 

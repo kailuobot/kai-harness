@@ -1,7 +1,7 @@
 #!/bin/bash
 # verify.sh - 产出物校验脚本
 # 退出码: 0=全部通过, 1=存在失败项
-# 用法: ./scripts/verify.sh [A|B|C|D|all] [REQ-ID]
+# 用法: ./scripts/verify.sh [A|B|C|D|E|all] [REQ-ID]
 
 set -euo pipefail
 
@@ -326,6 +326,106 @@ check_d() {
             echo "PASS: output/ 无 TODO/占位符残留"
         fi
     fi
+
+    # 任务超时检测
+    local task_started
+    task_started=$(grep "^task_started_at:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' | tr -d '"' || echo "")
+    if [ -n "$task_started" ] && [ "$task_started" != '""' ] && [ "$task_started" != "''" ]; then
+        local start_epoch now_epoch elapsed
+        start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$task_started" +%s 2>/dev/null || date -d "$task_started" +%s 2>/dev/null || echo "0")
+        now_epoch=$(date +%s)
+        if [ "$start_epoch" -gt 0 ]; then
+            elapsed=$(( now_epoch - start_epoch ))
+            if [ "$elapsed" -gt 1800 ]; then
+                echo "FAIL: 当前任务已运行 $((elapsed/60)) 分钟（超过 30 分钟上限）"
+                ERRORS=$((ERRORS + 1))
+            elif [ "$elapsed" -gt 900 ]; then
+                echo "WARN: 当前任务已运行 $((elapsed/60)) 分钟（接近超时）"
+            else
+                echo "PASS: 任务计时正常 ($((elapsed/60)) 分钟)"
+            fi
+        fi
+    fi
+}
+
+# E类检查: Handoff 契约一致性
+check_e() {
+    echo "=== E类检查: Handoff 契约一致性 ==="
+
+    if [ -z "$req_id" ]; then
+        echo "SKIP: 无 REQ-ID，无法执行 E 类检查"
+        return
+    fi
+
+    local handoff_dir="$REQ_DIR/handoffs"
+    if [ ! -d "$handoff_dir" ]; then
+        echo "SKIP: 无 handoffs 目录"
+        return
+    fi
+
+    # 检查白名单文件是否存在
+    local whitelist_errors=0
+    for handoff in "$handoff_dir"/*.md; do
+        [ -f "$handoff" ] || continue
+        # 提取白名单中的文件路径（以 - 开头的行，在"输入文件"节之后）
+        local in_whitelist=false
+        while IFS= read -r line; do
+            if echo "$line" | grep -q "输入文件"; then
+                in_whitelist=true
+                continue
+            fi
+            if echo "$line" | grep -q "^## "; then
+                in_whitelist=false
+            fi
+            if [ "$in_whitelist" = true ] && echo "$line" | grep -q "^- "; then
+                local filepath
+                filepath=$(echo "$line" | sed 's/^- //' | sed 's/`//g' | tr -d ' ')
+                if [ -n "$filepath" ] && [ "$filepath" != "{file_path_1}" ] && [ "$filepath" != "{file_path_2}" ]; then
+                    if [ ! -e "$filepath" ] && [ ! -e "$REQ_DIR/$filepath" ]; then
+                        # 只检查非模板占位符的路径
+                        if ! echo "$filepath" | grep -q "{"; then
+                            echo "WARN: $(basename "$handoff") 白名单引用不存在: $filepath"
+                            whitelist_errors=$((whitelist_errors + 1))
+                        fi
+                    fi
+                fi
+            fi
+        done < "$handoff"
+    done
+
+    if [ "$whitelist_errors" -eq 0 ]; then
+        echo "PASS: 白名单文件引用一致"
+    else
+        echo "WARN: $whitelist_errors 个白名单引用可能不存在（非阻塞）"
+    fi
+
+    # 检查 completed_steps 与实际文件一致性
+    if [ -f "$REQ_DIR/.state.md" ]; then
+        local phase
+        phase=$(grep "^phase:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+        local mode
+        mode=$(get_mode)
+
+        # 如果 phase=apply 或更后，plan-action.md 必须存在
+        if [ "$phase" = "apply" ] || [ "$phase" = "archive" ] || [ "$phase" = "done" ]; then
+            if [ ! -s "$REQ_DIR/plan-action.md" ]; then
+                echo "FAIL: phase=$phase 但 plan-action.md 不存在（契约不一致）"
+                ERRORS=$((ERRORS + 1))
+            else
+                echo "PASS: phase=$phase 与 plan-action.md 一致"
+            fi
+        fi
+
+        # 如果 phase=done，output/ 必须有内容
+        if [ "$phase" = "done" ]; then
+            if [ -z "$(ls -A "$REQ_DIR/output" 2>/dev/null)" ]; then
+                echo "FAIL: phase=done 但 output/ 为空（契约不一致）"
+                ERRORS=$((ERRORS + 1))
+            else
+                echo "PASS: phase=done 与 output/ 一致"
+            fi
+        fi
+    fi
 }
 
 # 执行检查
@@ -334,6 +434,7 @@ case "$check_type" in
     B|b) check_b ;;
     C|c) check_c ;;
     D|d) check_d ;;
+    E|e) check_e ;;
     all)
         check_a
         echo ""
@@ -342,9 +443,11 @@ case "$check_type" in
         check_c
         echo ""
         check_d
+        echo ""
+        check_e
         ;;
     *)
-        echo "用法: $0 [A|B|C|D|all] [REQ-ID]"
+        echo "用法: $0 [A|B|C|D|E|all] [REQ-ID]"
         exit 2
         ;;
 esac
