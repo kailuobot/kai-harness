@@ -59,9 +59,11 @@
 6. 等待所有回报，执行质量门禁:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
-   - SA 质量门禁（见 agents/pm.md）：对照表覆盖完整、Tasks 有依赖标注和验证方式、粒度合理
+   - SA 质量门禁：打开 `agents/pm.md` "SA 产出验收"清单，逐项核对：
+     - 对照表覆盖完整？Tasks 有依赖标注？每个 Task 有验证方式？粒度合理？
    - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
-   - 不满足则驳回对应角色（新 handoff，附具体缺陷描述）
+   - 全部通过 → 继续
+   - 任一不通过 → 写新 handoff 驳回对应角色，附带：未通过的检查项 + 具体位置 + 修正方向
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 
@@ -95,8 +97,10 @@
    - [Cline] 切换角色为 BA，指示读取 handoff
 5. 接收回报，执行质量门禁:
    - `deliverables/{REQ-ID}/ba/requirement-spec.md` 存在且非空
-   - BA 质量门禁（见 agents/pm.md）：每条需求有 SHALL+GWT、无模糊量词、需求间无矛盾
-   - 不满足则驳回（新 handoff，附具体缺陷描述）
+   - BA 质量门禁：打开 `agents/pm.md` "BA 产出验收"清单，逐项核对：
+     - 每条需求有 SHALL+GWT？无模糊量词？需求间无矛盾？
+   - 全部通过 → 继续
+   - 任一不通过 → 写新 handoff 驳回，附带：未通过的检查项 + 具体位置 + 修正方向
 6. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 7. `[PM] REQ-1 完成，需求规格已生成`
 
@@ -120,9 +124,11 @@
 6. 等待所有回报，执行质量门禁:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
-   - SA 质量门禁（见 agents/pm.md）：对照表覆盖完整、Tasks 有依赖标注和验证方式、粒度合理
+   - SA 质量门禁：打开 `agents/pm.md` "SA 产出验收"清单，逐项核对：
+     - 对照表覆盖完整？Tasks 有依赖标注？每个 Task 有验证方式？粒度合理？
    - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
-   - 不满足则驳回对应角色（新 handoff，附具体缺陷描述）
+   - 全部通过 → 继续
+   - 任一不通过 → 写新 handoff 驳回对应角色，附带：未通过的检查项 + 具体位置 + 修正方向
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 
@@ -138,12 +144,37 @@
 **Step 4: 需求评审（SR1）**
 
 1. `[PM] 启动 SR1 需求评审`
-2. 向用户呈现摘要：
-   - 需求规格要点
-   - 技术方案要点
-   - 测试覆盖情况
-   - 执行计划
-3. 等待用户决策：
+2. PM 逐项核对 SR1 通过标准：
+   ```
+   SR1 通过标准:
+   - [ ] 需求规格覆盖所有 Proposal 要点（逐条核对，无遗漏）
+   - [ ] 设计方案覆盖所有需求（对照表无空行）
+   - [ ] 每个 Task 有依赖标注和验证方式
+   - [ ] 计划可执行（无循环依赖、粒度合理）
+   - [ ] 测试用例覆盖核心功能和关键边界
+   ```
+3. 向用户呈现决策上下文：
+   ```
+   [人工审批节点]
+   评审节点: SR1
+
+   需求覆盖:
+     - 需求条数: {N} 条 SHALL
+     - Proposal 要点覆盖: {已覆盖}/{总数}
+
+   设计质量:
+     - Task 数量: {N} 个
+     - 并行度: Batch-1 含 {N} 个 Task（{百分比}）
+     - 技术决策: {N} 个关键决策有选型理由
+
+   测试覆盖:
+     - 测试用例数: {N}
+     - 需求覆盖: 每条需求至少 1 个用例
+
+   PM 建议: {通过/建议复查} ({理由})
+   请确认: 通过 / 驳回（请说明原因）
+   ```
+4. 等待用户决策：
    - **通过**:
      - 创建 baselines: `deliverables/{REQ-ID}/baselines/requirement-spec.v1.md` 等
        > 注：此处 baselines 是 propose 阶段的过程快照，用于 SR1 驳回时回退。与 `spec/baselines/`（archive 阶段的归档版本历史）不同。

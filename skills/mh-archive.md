@@ -87,14 +87,39 @@
 
 **full 模式：** 完整 SR4。
 1. `[PM] 启动 SR4 项目结项确认`
-2. 向用户呈现归档摘要：
-   - 归档模式（首次/变更）
-   - 产出类型: {output_type}
-   - 需求规格: spec/requirement-spec.md
-   - 技术设计: spec/design.md
-   - 最终产物: output/ 文件清单
-   - 本次需求编号: {REQ-ID}
-3. 等待用户决策：
+2. PM 逐项核对 SR4 通过标准：
+   ```
+   SR4 通过标准:
+   - [ ] 归档完整（spec/ 和 output/ 非空）
+   - [ ] 产出物可用（output/ 中文件与 plan-action.md 对应）
+   - [ ] 文档一致（spec/ 内容与实际实现匹配）
+   - [ ] 无遗漏归档（output_type 对应的额外归档已执行）
+   ```
+3. 向用户呈现决策上下文：
+   ```
+   [人工审批节点]
+   评审节点: SR4（结项确认）
+
+   归档概况:
+     - 归档模式: {首次/变更}
+     - 产出类型: {output_type}
+     - 归档文件数: spec/ {N} 个, output/ {N} 个
+
+   质量状态:
+     - 最终审计: SR3 已通过
+     - 需求覆盖: 100%（SR3 已确认）
+     - 修复总轮次: {累计修复次数}
+
+   归档清单:
+     - 需求规格: spec/requirement-spec.md
+     - 技术设计: spec/design.md
+     - 最终产物: output/ {文件列表}
+
+   本次需求编号: {REQ-ID}
+   PM 建议: {确认结项/建议复查} ({理由})
+   请确认: 确认结项 / 驳回（请说明原因）
+   ```
+4. 等待用户决策：
    - **确认结项**:
      - 写入 `deliverables/{REQ-ID}/SR4-record.md`
      - 更新 `deliverables/{REQ-ID}/.state.md`:

@@ -41,8 +41,10 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
    - [Cline] 切换角色为 DE，指示读取 handoff
 5. 接收回报，执行质量门禁:
    - 文件存在性: output/ 非空、de/code-report.md 存在
-   - DE 质量门禁（见 agents/pm.md）：dev-test=PASS、post-verify=PASS、无 TODO 残留
-   - 不满足则驳回（新 handoff，附具体缺陷描述）
+   - DE 质量门禁：打开 `agents/pm.md` "DE 产出验收"清单，逐项核对：
+     - dev-test=PASS？post-verify=PASS？无 TODO 残留？
+   - 全部通过 → 继续
+   - 任一不通过 → 写新 handoff 驳回，附带：未通过的检查项 + 具体位置 + 修正方向
 6. `[PM] 开发完成`
 
 **Step 2: TE 轻量审计**
@@ -55,7 +57,10 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
    - 约束: fast 模式轻量验证——工程检查（lint+构建）+ 关键路径抽查（验证核心功能可用），不要求完整覆盖分析。根据 .state.md 中 test_strategy 执行对应验证；如 test_strategy=manual，生成人工检查清单（仅核心项）
 3. 派发任务给 TE
 4. 接收回报，执行质量门禁:
-   - TE 质量门禁（见 agents/pm.md）：结论明确、PASS 时无未解决失败项、FAIL 时有复现步骤
+   - TE 质量门禁：打开 `agents/pm.md` "TE 产出验收"清单，逐项核对：
+     - 结论明确（PASS/FAIL）？PASS 时无未解决失败项？FAIL 时有复现步骤？
+   - 全部通过 → 按 TE 结论处理
+   - 门禁不通过（如报告模糊）→ 写新 handoff 驳回 TE，要求补充
    - PASS → 继续 Step 3
    - FAIL → 修复循环（最多5轮）
 
@@ -167,7 +172,15 @@ END FOR
 **Step 2: SR2 功能评审**
 
 1. `[PM] 所有 Task 完成，启动 SR2 功能评审`
-2. 向用户呈现决策上下文：
+2. PM 逐项核对 SR2 通过标准：
+   ```
+   SR2 通过标准:
+   - [ ] 所有 Task 通过 TE 审计（无 Critical/Major 缺陷）
+   - [ ] 代码质量达标（所有 Task 的 dev-test=PASS, post-verify=PASS）
+   - [ ] 无 TODO/FIXME 残留（verify.sh D 类检查通过）
+   - [ ] 需求覆盖无明显遗漏
+   ```
+3. 向用户呈现决策上下文：
    ```
    [人工审批节点]
    评审节点: SR2
@@ -199,7 +212,15 @@ END FOR
 **Step 4: SR3 最终评审**
 
 1. `[PM] 启动 SR3 最终功能评审`
-2. 向用户呈现决策上下文：
+2. PM 逐项核对 SR3 通过标准：
+   ```
+   SR3 通过标准:
+   - [ ] 全量测试通过（TE final-test-report 结论=PASS）
+   - [ ] 需求覆盖无遗漏（覆盖率 = 100%）
+   - [ ] 无 Critical/Major 缺陷
+   - [ ] 回归测试通过（已有功能未被破坏）
+   ```
+3. 向用户呈现决策上下文：
    ```
    [人工审批节点]
    评审节点: SR3（最终评审）
