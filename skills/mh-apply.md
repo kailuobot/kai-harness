@@ -287,7 +287,10 @@ repair_history:
 
 ### 修复派发
 
-1. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
+1. 修复派发前，PM 执行快照：
+   - 计算当前 output/ 的文件 hash（`find output/ -type f | xargs md5sum | md5sum`）
+   - 将 hash 和当前 code-report 路径追加到 `.state.md` repair_snapshots
+2. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
 2. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
    - 使用 handoff 模板中的"修复上下文"节，填写：
      - 失败特征：{错误类型 + 关键错误信息}

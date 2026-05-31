@@ -63,5 +63,18 @@
 
 - 修改 skills/agents 后，检查 design.md 对应章节是否需要同步
 - 新增模板文件后，更新本文件的映射表
-- 新增 scripts 检查项后，更新 design.md §7.4
+- 新增 scripts 检查项后，更新 design.md §6
 - 发现映射表与实际不符时，以实际文件为准，更新映射表
+
+---
+
+## 版本升级自检清单
+
+每次重大变更后执行：
+
+- [ ] `grep -r "见 agents/pm.md" skills/` → 确认引用描述与 pm.md 实际内容一致
+- [ ] `grep -r "A/B/C/D" .` → 确认所有引用已更新为 A/B/C/D/E（如适用）
+- [ ] `wc -l skills/mh-*.md` → 确认无文件超过 300 行（超过则规划拆分）
+- [ ] `bash scripts/check-harness.sh` → 框架完整性通过
+- [ ] 对比 state-template.md 与最近的 deliverables/*/.state.md → schema 一致
+- [ ] 检查 CHANGELOG.md 是否已更新

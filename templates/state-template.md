@@ -25,7 +25,7 @@ auto_advance: false            # 是否处于 /mh-run 自动推进模式
 repair_round: 0                # 当前修复轮次（0=未进入修复循环，1-5=修复中）
 repair_task: ""                # 当前修复的任务标识（如 Task-1）
 repair_history: []             # 修复历史（每轮追加，通过后清空）
-# 格式: [{round: 1, error_type: "test_failure", failed_count: 3, summary: "API返回500"}]
+# 格式: [{round: 1, error_type: "test_failure", failed_count: 3, summary: "API返回500", root_cause_hypothesis: "...", action_taken: "..."}]
 repair_snapshots: []           # 修复快照（每轮追加，通过后清空）
 # 格式: [{round: 1, output_hash: "md5", code_report: "de/code-report-r1.md"}]
 
