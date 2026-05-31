@@ -39,7 +39,10 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
 4. 派发任务:
    - [Claude Code] spawn SubAgent，注入 handoff + agents/de.md + 白名单文件
    - [Cline] 切换角色为 DE，指示读取 handoff
-5. 接收回报，校验输出文件存在性
+5. 接收回报，执行质量门禁:
+   - 文件存在性: output/ 非空、de/code-report.md 存在
+   - DE 质量门禁（见 agents/pm.md）：dev-test=PASS、post-verify=PASS、无 TODO 残留
+   - 不满足则驳回（新 handoff，附具体缺陷描述）
 6. `[PM] 开发完成`
 
 **Step 2: TE 轻量审计**
@@ -51,7 +54,8 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
    - 期望输出: `deliverables/{REQ-ID}/te/temp-test-report.md`
    - 约束: 根据 .state.md 中 test_strategy 执行对应验证；如 test_strategy=manual，生成人工检查清单
 3. 派发任务给 TE
-4. 接收回报:
+4. 接收回报，执行质量门禁:
+   - TE 质量门禁（见 agents/pm.md）：结论明确、PASS 时无未解决失败项、FAIL 时有复现步骤
    - PASS → 继续 Step 3
    - FAIL → 修复循环（最多5轮）
 
@@ -112,7 +116,10 @@ END FOR
 3. 并行派发:
    - [Claude Code] 同时 spawn 多个 DE SubAgent，每个处理一个 Task
    - [Cline] 逐个串行执行
-4. 等待所有 DE 完成，校验各自输出文件存在性
+4. 等待所有 DE 完成，执行质量门禁:
+   - 文件存在性: 各 Task 的 output/ 产出存在
+   - DE 质量门禁（见 agents/pm.md）：dev-test=PASS、post-verify=PASS、无 TODO 残留
+   - 不满足则驳回对应 Task（新 handoff，附具体缺陷描述）
 5. `[PM] Batch-{B} 开发完成，并行派发 TE 审计`
 6. 为 Batch 内每个 Task-{N} 写入 TE handoff:
    - `deliverables/{REQ-ID}/handoffs/{REQ-ID}-TEST1-T{N}-R1.md`
@@ -120,7 +127,8 @@ END FOR
 7. 并行派发:
    - [Claude Code] 同时 spawn 多个 TE SubAgent
    - [Cline] 逐个串行执行
-8. 等待所有 TE 完成，汇总审计结果:
+8. 等待所有 TE 完成，执行质量门禁并汇总审计结果:
+   - TE 质量门禁（见 agents/pm.md）：结论明确、覆盖分析完整、失败项有复现步骤
    - 全部 PASS → 人工批量确认本批次
    - 部分 FAIL → 失败的 Task 进入修复循环（可并行修复），通过的 Task 等待
 9. 人工批量确认:

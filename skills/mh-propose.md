@@ -56,9 +56,12 @@
 5. 并行派发任务:
    - [Claude Code] 同时 spawn 两个 SubAgent（SA + TE），各自注入对应 handoff + agent 定义 + 白名单文件
    - [Cline] 串行执行：先 SA 后 TE（Cline 不支持并行）
-6. 等待所有回报，校验:
+6. 等待所有回报，执行质量门禁:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
+   - SA 质量门禁（见 agents/pm.md）：对照表覆盖完整、Tasks 有依赖标注和验证方式、粒度合理
+   - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
+   - 不满足则驳回对应角色（新 handoff，附具体缺陷描述）
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 
@@ -90,7 +93,10 @@
 4. 派发任务:
    - [Claude Code] spawn SubAgent，注入 handoff + agents/ba.md + 白名单文件
    - [Cline] 切换角色为 BA，指示读取 handoff
-5. 接收回报，校验 `deliverables/{REQ-ID}/ba/requirement-spec.md` 存在且非空
+5. 接收回报，执行质量门禁:
+   - `deliverables/{REQ-ID}/ba/requirement-spec.md` 存在且非空
+   - BA 质量门禁（见 agents/pm.md）：每条需求有 SHALL+GWT、无模糊量词、需求间无矛盾
+   - 不满足则驳回（新 handoff，附具体缺陷描述）
 6. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 7. `[PM] REQ-1 完成，需求规格已生成`
 
@@ -111,9 +117,12 @@
 5. 并行派发任务:
    - [Claude Code] 同时 spawn 两个 SubAgent（SA + TE），各自注入对应 handoff + agent 定义 + 白名单文件
    - [Cline] 串行执行：先 SA 后 TE
-6. 等待所有回报，校验:
+6. 等待所有回报，执行质量门禁:
    - `deliverables/{REQ-ID}/sa/design.md` 存在且非空
    - `deliverables/{REQ-ID}/te/testcases.md` 存在且非空
+   - SA 质量门禁（见 agents/pm.md）：对照表覆盖完整、Tasks 有依赖标注和验证方式、粒度合理
+   - TE 质量门禁：每条用例有关联需求、步骤具体、期望结果明确
+   - 不满足则驳回对应角色（新 handoff，附具体缺陷描述）
 7. 更新 `deliverables/{REQ-ID}/.state.md`: current_handoff=""
 8. `[PM] REQ-2 + REQ-3 完成，技术方案和测试用例已生成`
 
