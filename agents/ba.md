@@ -122,3 +122,5 @@
 ## 模型建议
 
 需要较强的文本理解和结构化输出能力。
+
+> 金标准示例见 `templates/examples/requirement-spec-example.md`

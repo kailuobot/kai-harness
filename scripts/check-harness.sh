@@ -126,6 +126,22 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
+# 7b. 金标准示例
+if [ -d "templates/examples" ] && [ "$(ls -A templates/examples/*.md 2>/dev/null | wc -l)" -ge 4 ]; then
+    echo "PASS: 金标准示例 ($(ls templates/examples/*.md | wc -l | tr -d ' ') 个)"
+else
+    echo "FAIL: templates/examples/ 缺失或不完整（需 ≥4 个示例）"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# 7c. 产出结构参考
+if [ -d "templates/output-guides" ] && [ "$(ls -A templates/output-guides/*.md 2>/dev/null | wc -l)" -ge 3 ]; then
+    echo "PASS: 产出结构参考 ($(ls templates/output-guides/*.md | wc -l | tr -d ' ') 个)"
+else
+    echo "FAIL: templates/output-guides/ 缺失或不完整（需 ≥3 个指南）"
+    ERRORS=$((ERRORS + 1))
+fi
+
 # 8. PPT 子系统
 echo ""
 echo "--- PPT 子系统 ---"

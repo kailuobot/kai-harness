@@ -158,3 +158,5 @@
 ## 模型建议
 
 需要较强的编码能力和 TDD 实践经验。
+
+> 金标准示例见 `templates/examples/code-report-example.md`

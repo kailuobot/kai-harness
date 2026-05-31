@@ -220,3 +220,5 @@
 ## 模型建议
 
 需要较强的测试设计能力。根据 test_strategy 选择合适的测试工具执行验证。
+
+> 金标准示例见 `templates/examples/test-report-example.md`

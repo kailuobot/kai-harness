@@ -128,3 +128,5 @@
 ## 模型建议
 
 需要较强的技术理解、架构设计和结构化输出能力。可使用 WebSearch 工具补充技术调研。
+
+> 金标准示例见 `templates/examples/design-example.md`

@@ -184,6 +184,30 @@ PM 编排计划时，必须标注 Task 间依赖关系，用于 apply 阶段的�
 
 ---
 
+## plan-action.md 编排质量标准
+
+PM 编排完成后，必须自检以下质量标准：
+
+**粒度检查：**
+- Task 数量与需求复杂度匹配（3-4 条需求通常对应 3-6 个 Task）
+- 不出现"1 个 Task 实现全部功能"（除非 fast 模式且需求极简）
+- 不出现"10+ 个 Task 但每个只改 1 行"（过度拆分）
+
+**依赖检查：**
+- 依赖图无环（Task-A deps Task-B，Task-B 不能 deps Task-A）
+- Batch-1 占比合理（通常 40-70% 的 Task 在 Batch-1）
+- 如果所有 Task 都是 `[deps: none]`，质疑是否遗漏了依赖（数据模型 Task 通常是其他 Task 的前置）
+
+**完整性检查：**
+- 对照 design.md 的 Tasks 清单，确认无遗漏
+- 对照需求/Proposal 要点，确认每条至少映射到 1 个 Task
+
+**可验证性检查：**
+- 每个 Task 有明确的验证方式（来自 design.md 的验证方式列）
+- 验证方式与 test_strategy 一致（如 test_strategy=unit，验证方式不应是"人工检查"）
+
+---
+
 ## 异常处理
 
 - 任何步骤的 SubAgent 回报 status=failed: PM 检查失败原因，决定重试或上升人工
