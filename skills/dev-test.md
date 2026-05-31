@@ -12,8 +12,31 @@ DE 完成编码实现后，在填写 code-report.md 之前执行。
 
 ## 前置: 读取技术栈信息
 
-1. 读取 `deliverables/{REQ-ID}/.state.md` 中 tech_stack、test_strategy、output_type 字段
+1. 读取 `deliverables/{REQ-ID}/.state.md` 中 tech_stack、test_strategy、output_type、mode 字段
 2. 根据 tech_stack.language 确定命令路由
+3. 根据 mode 确定执行路径（fast 快速路径 / standard+full 完整路径）
+
+---
+
+## Fast 模式快速路径
+
+当 `mode=fast` 且 `repair_round=0`（首次提交）时，执行精简验证：
+
+1. **测试执行**（必须）：同 Step 1，运行测试
+2. **语法检查**（替代完整 lint）：仅检查语法错误，不检查风格
+   - javascript: `npx tsc --noEmit` 或 `node --check {files}`
+   - python: `python -m py_compile {files}`
+   - go: `go vet ./...`
+   - rust: `cargo check`
+   - java: `mvn compile -q`
+3. **跳过**：完整 lint、完整构建（语法检查已覆盖编译错误）
+4. 进入 Step 4 自检清单
+
+> 注：fast 模式修复轮次（repair_round > 0）时恢复完整路径，确保修复质量。
+
+---
+
+## Standard/Full 完整路径
 
 ## Step 1: 测试执行
 

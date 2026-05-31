@@ -52,7 +52,7 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
    - to: TE
    - 白名单: `deliverables/{REQ-ID}/output/`, `deliverables/{REQ-ID}/proposal.md`, `deliverables/{REQ-ID}/.state.md`
    - 期望输出: `deliverables/{REQ-ID}/te/temp-test-report.md`
-   - 约束: 根据 .state.md 中 test_strategy 执行对应验证；如 test_strategy=manual，生成人工检查清单
+   - 约束: fast 模式轻量验证——工程检查（lint+构建）+ 关键路径抽查（验证核心功能可用），不要求完整覆盖分析。根据 .state.md 中 test_strategy 执行对应验证；如 test_strategy=manual，生成人工检查清单（仅核心项）
 3. 派发任务给 TE
 4. 接收回报，执行质量门禁:
    - TE 质量门禁（见 agents/pm.md）：结论明确、PASS 时无未解决失败项、FAIL 时有复现步骤
@@ -62,12 +62,26 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
 **Step 3: 人工确认（唯一审批点）**
 
 1. `[PM] 进入人工确认`
-2. 向用户呈现：
+2. 向用户呈现决策上下文：
    ```
    [人工确认]
    模式: fast
+   
+   变更摘要:
+     - 文件数: {N} 个文件
+     - 新增/修改/删除: +{N} / ~{N} / -{N}
+   
+   质量状态:
+     - 测试: {通过数}/{总数} 通过
+     - dev-test: PASS
+     - TE 审计: {PASS/FAIL} ({一句话结论})
+   
+   修复历史: {首次通过 / 经 {N} 轮修复后通过}
+   
    产出文件: deliverables/{REQ-ID}/output/
    审计报告: deliverables/{REQ-ID}/te/temp-test-report.md
+   
+   PM 建议: {通过/建议人工复查} ({理由})
    请确认: 通过 / 驳回（请说明原因）
    ```
 3. 用户通过:
@@ -134,8 +148,18 @@ END FOR
 9. 人工批量确认:
    ```
    [人工确认 Batch-{B}]
+   
    通过的 Task: {列表}
+   变更摘要:
+     - 总文件数: {N}
+     - 各 Task 概要: {Task-1: +X行, Task-2: +Y行, ...}
+   
+   质量状态:
+     - 测试覆盖: {已验证需求数}/{总需求数}
+     - 修复轮次: {各 Task 的修复次数，0=首次通过}
+   
    审计报告: deliverables/{REQ-ID}/te/temp-test-report.md
+   PM 建议: {通过/建议复查} ({理由})
    请确认: 通过 / 驳回（指定 Task 和原因）
    ```
 10. 确认通过 → 记入 completed_steps → 下一个 Batch
@@ -143,14 +167,22 @@ END FOR
 **Step 2: SR2 功能评审**
 
 1. `[PM] 所有 Task 完成，启动 SR2 功能评审`
-2. 向用户呈现：
+2. 向用户呈现决策上下文：
    ```
    [人工审批节点]
    评审节点: SR2
-   审批内容摘要:
-     - 已完成 Task 列表及各自审计结论
-     - 代码报告摘要
+   
+   完成概况:
+     - 已完成 Task: {列表及各自审计结论}
+     - 总文件变更: {N} 个文件
+     - 测试覆盖: {已验证需求数}/{总需求数}
+   
+   风险评估:
+     - 修复轮次统计: {各 Task 修复次数，高修复次数=高风险}
+     - 降级验证: {有/无，如有列出未覆盖项}
+   
    相关产物: deliverables/{REQ-ID}/output/, deliverables/{REQ-ID}/te/temp-test-report.md
+   PM 建议: {通过/建议复查} ({理由})
    请确认: 通过 / 驳回（请说明原因）
    ```
 3. 通过: 写入 SR2-record.md，继续
@@ -167,7 +199,28 @@ END FOR
 **Step 4: SR3 最终评审**
 
 1. `[PM] 启动 SR3 最终功能评审`
-2. 向用户呈现最终测试报告 + 产出物清单
+2. 向用户呈现决策上下文：
+   ```
+   [人工审批节点]
+   评审节点: SR3（最终评审）
+   
+   最终审计结论: {PASS/FAIL}
+   需求覆盖: {已验证}/{总数} ({百分比})
+   
+   质量总结:
+     - 全量测试: {通过数}/{总数}
+     - 回归测试: {通过/未执行}
+     - 工程验证: {lint + 构建状态}
+   
+   风险项（如有）:
+     - {降级验证项}
+     - {高修复次数的 Task}
+   
+   产出物清单: deliverables/{REQ-ID}/output/ ({N} 个文件)
+   最终报告: deliverables/{REQ-ID}/te/final-test-report.md
+   PM 建议: {通过/建议复查} ({理由})
+   请确认: 通过 / 驳回（请说明原因）
+   ```
 3. 通过:
    - 写入 SR3-record.md
    - 更新 `deliverables/{REQ-ID}/.state.md`: sr_status.SR3=approved, phase=apply, current_step=SR3-DONE
@@ -186,13 +239,57 @@ END FOR
 
 ## 修复循环（所有模式通用）
 
-1. `[PM] Task-{N} 审计失败（轮次 {R}/5），派发修复给 DE`
-2. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
-3. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
-   - 附加: 上轮失败原因、失败报告路径
+### 根因分析（PM 执行）
+
+PM 在派发修复前，必须基于 TE 报告进行根因分析：
+
+1. `[PM] Task-{N} 审计失败（轮次 {R}/5），执行根因分析`
+2. 读取 TE 报告，提取：
+   - 失败特征：错误类型（test_failure / lint_error / build_error / logic_error）
+   - 关键错误信息：具体的报错内容（前 2-3 条）
+   - 影响范围：失败数量 / 总数量
+3. 对比历史（如 repair_round > 1）：
+   - 与上轮相比，失败数是增加还是减少？（收敛判断）
+   - 错误类型是否变化？（新问题 vs 同一问题）
+4. 形成修复指导：根因假设 + 建议修复方向
+
+### 收敛追踪与提前升级
+
+更新 `.state.md` 中 repair_history（每轮追加）：
+```yaml
+repair_history:
+  - round: 1
+    error_type: "test_failure"
+    failed_count: 3
+    summary: "API endpoint 返回 500"
+  - round: 2
+    error_type: "test_failure"
+    failed_count: 2
+    summary: "修复了连接问题，仍有 2 个断言失败"
+```
+
+**提前升级条件**（不等到第 5 轮）：
+- 连续 2 轮 failed_count 增加（发散）→ 立即升级人工
+- 连续 2 轮 error_type 变化（修一个坏一个）→ 立即升级人工
+- 第 3 轮仍为同一错误且无进展 → 升级人工
+
+### 修复派发
+
+1. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
+2. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
+   - 使用 handoff 模板中的"修复上下文"节，填写：
+     - 失败特征：{错误类型 + 关键错误信息}
+     - 根因假设：{PM 的分析}
+     - 建议修复方向：{具体指导，不是"请修复"}
+     - 历史尝试：{前几轮做了什么、为什么没成功}
+   - 白名单追加：TE 的失败报告路径
+3. `[PM] 派发修复给 DE（轮次 {R+1}/5，{收敛/发散}）`
 4. DE 修复 → TE 重新审计
-5. 审计通过: 更新 `deliverables/{REQ-ID}/.state.md`: repair_round=0, repair_task=""
-6. 轮次达 5 次仍失败: `[PM] Task-{N} 超过最大重试次数，上升人工审核`
+5. 审计通过:
+   - 更新 `.state.md`: repair_round=0, repair_task="", repair_history=[]
+6. 达到升级条件:
+   - `[PM] Task-{N} 修复未收敛，上升人工审核`
+   - 向用户呈现完整修复历史和失败模式
 
 ## 异常处理
 

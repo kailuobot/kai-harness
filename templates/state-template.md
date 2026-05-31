@@ -24,6 +24,8 @@ auto_advance: false            # 是否处于 /mh-run 自动推进模式
 # === 修复循环 ===
 repair_round: 0                # 当前修复轮次（0=未进入修复循环，1-5=修复中）
 repair_task: ""                # 当前修复的任务标识（如 Task-1）
+repair_history: []             # 修复历史（每轮追加，通过后清空）
+# 格式: [{round: 1, error_type: "test_failure", failed_count: 3, summary: "API返回500"}]
 
 # === 审批状态 ===
 sr_status:
@@ -90,6 +92,7 @@ req_id: REQ{NNN}
 
 1. 每次更新任何字段时，必须同步更新 `last_updated`
 2. `repair_round` 在每轮修复开始时递增，任务通过审计后重置为 0
-3. `completed_steps` 仅追加，不删除（用于断点恢复跳过已完成步骤）
-4. `current_handoff` 在每次写入新 handoff 时更新，handoff 完成后清空
-5. `sr_status` 各字段在对应审批节点执行时更新
+3. `repair_history` 每轮修复追加一条记录（含 error_type、failed_count、summary），任务通过后清空为 []
+4. `completed_steps` 仅追加，不删除（用于断点恢复跳过已完成步骤）
+5. `current_handoff` 在每次写入新 handoff 时更新，handoff 完成后清空
+6. `sr_status` 各字段在对应审批节点执行时更新

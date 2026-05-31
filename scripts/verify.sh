@@ -1,7 +1,7 @@
 #!/bin/bash
 # verify.sh - 产出物校验脚本
 # 退出码: 0=全部通过, 1=存在失败项
-# 用法: ./scripts/verify.sh [A|B|C|all] [REQ-ID]
+# 用法: ./scripts/verify.sh [A|B|C|D|all] [REQ-ID]
 
 set -euo pipefail
 
@@ -251,20 +251,100 @@ check_c() {
     echo "PASS: 流程一致性检查完成"
 }
 
+# D类检查: 流程健康度
+check_d() {
+    echo "=== D类检查: 流程健康度 ==="
+
+    if [ -z "$req_id" ]; then
+        echo "SKIP: 无 REQ-ID，无法执行 D 类检查"
+        return
+    fi
+
+    if [ ! -f "$REQ_DIR/.state.md" ]; then
+        echo "SKIP: $REQ_DIR/.state.md 不存在"
+        return
+    fi
+
+    # 修复循环耗尽检测
+    local repair_round
+    repair_round=$(grep "^repair_round:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "0")
+    if [ "$repair_round" -ge 5 ] 2>/dev/null; then
+        echo "FAIL: repair_round=$repair_round（修复循环耗尽，需人工介入）"
+        ERRORS=$((ERRORS + 1))
+    elif [ "$repair_round" -ge 3 ] 2>/dev/null; then
+        echo "WARN: repair_round=$repair_round（修复循环进入高轮次）"
+    else
+        echo "PASS: repair_round=$repair_round"
+    fi
+
+    # Handoff 超时检测（pending 且 >30 分钟）
+    local handoff_dir="$REQ_DIR/handoffs"
+    if [ -d "$handoff_dir" ]; then
+        local now
+        now=$(date +%s)
+        local stale_count=0
+        for handoff in "$handoff_dir"/*.md; do
+            [ -f "$handoff" ] || continue
+            if grep -q "^status: pending" "$handoff" 2>/dev/null; then
+                local file_age
+                file_age=$(( now - $(stat -f%m "$handoff" 2>/dev/null || stat -c%Y "$handoff" 2>/dev/null || echo "$now") ))
+                if [ "$file_age" -gt 1800 ]; then
+                    echo "WARN: $(basename "$handoff") 处于 pending 状态超过 30 分钟"
+                    stale_count=$((stale_count + 1))
+                fi
+            fi
+        done
+        if [ "$stale_count" -eq 0 ]; then
+            echo "PASS: 无超时 handoff"
+        fi
+    fi
+
+    # 状态一致性检测
+    local current_step current_handoff
+    current_step=$(grep "^current_step:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+    current_handoff=$(grep "^current_handoff:" "$REQ_DIR/.state.md" 2>/dev/null | awk '{print $2}' || echo "")
+
+    if [ -n "$current_handoff" ] && [ "$current_handoff" != '""' ] && [ "$current_handoff" != "''" ]; then
+        if [ ! -f "$handoff_dir/$current_handoff" ]; then
+            echo "FAIL: current_handoff=$current_handoff 但文件不存在"
+            ERRORS=$((ERRORS + 1))
+        else
+            echo "PASS: current_handoff 文件存在"
+        fi
+    fi
+
+    # TODO/占位符残留检测（扫描 output/ 中的代码文件）
+    if [ -d "$REQ_DIR/output" ]; then
+        local todo_count=0
+        todo_count=$(grep -rl "TODO\|FIXME\|PLACEHOLDER\|{待填充}\|Lorem ipsum" "$REQ_DIR/output" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$todo_count" -gt 0 ]; then
+            echo "WARN: output/ 中 $todo_count 个文件含 TODO/FIXME/占位符"
+            grep -rl "TODO\|FIXME\|PLACEHOLDER\|{待填充}\|Lorem ipsum" "$REQ_DIR/output" 2>/dev/null | head -3 | while read -r f; do
+                echo "  - $f"
+            done
+        else
+            echo "PASS: output/ 无 TODO/占位符残留"
+        fi
+    fi
+}
+
 # 执行检查
 case "$check_type" in
     A|a) check_a ;;
     B|b) check_b ;;
     C|c) check_c ;;
+    D|d) check_d ;;
     all)
         check_a
         echo ""
         check_b
         echo ""
         check_c
+        echo ""
+        check_d
         ;;
     *)
-        echo "用法: $0 [A|B|C|all] [REQ-ID]"
+        echo "用法: $0 [A|B|C|D|all] [REQ-ID]"
         exit 2
         ;;
 esac
