@@ -11,8 +11,11 @@ deliverables/REQ*/
 spec/*.md
 spec/baselines/
 
-# output 产物
-output/final/
+# output 产物（使用者文件）
+output/
+
+# reference 参考资料（使用者文件）
+reference/
 
 # MCP 服务器自动生成目录（zai-mcp-server）
 android-*/
