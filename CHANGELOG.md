@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.6.1] - 2026-06-01
+
+上下文效率优化 — 减少 PM 运行时噪音，修复文档不一致。
+
+### 核心改进
+
+- **mh-apply.md 拆分**: 328行单文件拆为 4 个文件（主文件 45行 + fast 65行 + standard 167行 + repair 70行），PM 按模式按需加载
+- **PM 运行时负载**: standard/full apply 阶段从 487行降到 371行（-24%），fast 模式降到 269行
+- **mh-clarify.md 环境预检压缩**: 逐语言枚举改为原则性指引（256→237行）
+- **mh-run.md 表格合并**: "推进触发条件"+"停止条件枚举"合并为统一流程控制表（167→158行）
+
+### 新增
+
+- **跨 REQ 增量开发场景**: mh-clarify.md CHANGE 模式增加增量开发子场景（output/ 已有代码时的白名单和回归策略）
+- **Proposal 格式增强**: 增加"功能模块"字段，提升起点质量
+- **Batch 并行策略说明**: mh-apply-standard.md 明确 Batch 原子性设计选择及理由
+
+### 修复
+
+- **source-of-truth.md**: 修复引用已删除文件（pm-dispatch-protocol.md → agents/pm.md）
+- **design.md §10**: 增加状态列（done/planned），标记已实现的演进方向
+- **verify.sh C 类**: 增加 output_files 非空检查（补全 handoff 回报检测）
+
+---
+
+## [0.6.0] - 2026-06-01
+
+数据驱动优化 — 基于 REQ001 实战数据修复执行层缺陷。
+
+### 核心改进
+
+- **Handoff 完成回报强制机制**: 模板增加醒目强制提示 + PM 代填逻辑（回报缺失时根据产出物推断）+ verify.sh C 类检查
+- **process.log 强制落盘**: logging-standard.md 增加强制写入规则 + 最低行数要求 + verify.sh 检查
+- **SR3 覆盖率标准弹性化**: 从"100%"改为"≥95% + 降级确认"，决策上下文卡增加降级项确认区域
+- **归档排除规则**: mh-archive.md ARC-3 增加 .venv/node_modules/__pycache__/ 等排除列表 + verify.sh B 类检查
+
+### 新增
+
+- **Agent 超时处理规则**: 超时+产出完整=成功，PM 代填 code-report
+- **code-report 独立规则**: 并行批次中每个 Task 独立 code-report，禁止合并
+- **DE 超时保底行为**: 优先确保 code-report 已写入
+- **docs/v0.6.0-optimization-report.md**: 完整的问题分析+改善措施+metrics 设计思路文档
+
+### 数据基础
+
+- 首次实战数据: REQ001（PSDT-Agent 框架，full 模式，43分钟，14 Task，326测试 100%通过）
+- 核心发现: 设计层运转良好，执行层存在"说到没做到"问题
+
+---
+
+## [0.5.5] - 2026-06-01
+
+Metrics 集成到运行时 + 重复变量声明修复。
+
+### 改进
+
+- **mh-archive.md**: 新增 ARC-4 步骤（PM 在 SR4 前根据 .state.md 数据生成 metrics.md）
+- **source-of-truth.md**: 新增 metrics-template 权威源映射
+- **verify.sh**: 删除 check_e 中重复的 `local handoff_dir` 声明
+
+---
+
 ## [0.5.4] - 2026-06-01
 
 维护纪律修复 + 运行时指标收集 + 架构演进阈值。
