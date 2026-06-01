@@ -71,6 +71,18 @@
 6. 校验根目录 `output/` 非空
 7. `[PM] ARC-3 完成`
 
+## Step ARC-4: 执行指标生成
+
+**执行角色:** PM
+
+1. `[PM] 启动 ARC-4 执行指标生成`
+2. 根据 .state.md 中的数据（repair_history、sr_status、task_started_at 等）填写 `templates/metrics-template.md`
+3. 保存为 `deliverables/{REQ-ID}/metrics.md`
+4. 校验文件存在且非空
+5. `[PM] ARC-4 完成，执行指标已生成`
+
+---
+
 ## Step SR4: 项目结项确认（人工审批）
 
 **执行角色:** PM（人机交互）

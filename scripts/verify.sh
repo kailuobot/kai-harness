@@ -428,7 +428,6 @@ check_e() {
     fi
 
     # 上下游白名单对齐：TE handoff 应包含上游关键产出的引用
-    local handoff_dir="$REQ_DIR/handoffs"
     if [ -d "$handoff_dir" ]; then
         local alignment_warns=0
         for handoff in "$handoff_dir"/*.md; do

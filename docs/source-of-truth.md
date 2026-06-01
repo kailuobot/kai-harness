@@ -29,6 +29,7 @@
 | PPT 补充规则 | skills/mh-ppt.md | docs/design.md §11 |
 | 金标准示例 | templates/examples/*.md | — |
 | 产出结构参考 | templates/output-guides/*.md | — |
+| 执行指标模板 | templates/metrics-template.md | skills/mh-archive.md ARC-4 |
 
 ---
 
