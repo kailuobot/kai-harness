@@ -427,37 +427,20 @@ check_e() {
         fi
     fi
 
-    # 上下游白名单对齐：上游期望输出应出现在下游白名单中
+    # 上下游白名单对齐：TE handoff 应包含上游关键产出的引用
     local handoff_dir="$REQ_DIR/handoffs"
     if [ -d "$handoff_dir" ]; then
-        local upstream_outputs=""
         local alignment_warns=0
-        # 收集所有 handoff 的期望输出
-        for handoff in "$handoff_dir"/*.md; do
-            [ -f "$handoff" ] || continue
-            local expect_output
-            expect_output=$(grep -A1 "## 期望输出" "$handoff" 2>/dev/null | grep "^- " | sed 's/^- //' | sed 's/`//g' | tr -d ' ')
-            if [ -n "$expect_output" ] && ! echo "$expect_output" | grep -q "{"; then
-                # 检查这个输出是否出现在后续 handoff 的白名单中
-                for downstream in "$handoff_dir"/*.md; do
-                    [ -f "$downstream" ] || continue
-                    [ "$downstream" = "$handoff" ] && continue
-                    # 只检查 TE 类 handoff（TEST 开头）是否包含 SA/DE 的产出
-                    if echo "$(basename "$downstream")" | grep -q "TEST"; then
-                        if echo "$expect_output" | grep -q "design.md\|output/"; then
-                            if ! grep -q "$(basename "$expect_output" 2>/dev/null || echo "$expect_output")" "$downstream" 2>/dev/null; then
-                                # 简化检查：只看关键文件名是否在下游白名单中提及
-                                :
-                            fi
-                        fi
-                    fi
-                done
-            fi
-        done
-        # 简化版：检查 TE handoff 是否引用了 output/ 目录
         for handoff in "$handoff_dir"/*.md; do
             [ -f "$handoff" ] || continue
             if echo "$(basename "$handoff")" | grep -q "TEST"; then
+                # 检查是否在 propose 之后的审计（有 design.md 可参考）
+                if [ -f "$REQ_DIR/sa/design.md" ]; then
+                    if ! grep -q "design.md" "$handoff" 2>/dev/null; then
+                        echo "WARN: $(basename "$handoff") (TE) 白名单未包含 design.md"
+                        alignment_warns=$((alignment_warns + 1))
+                    fi
+                fi
                 if ! grep -q "output/" "$handoff" 2>/dev/null; then
                     echo "WARN: $(basename "$handoff") (TE) 白名单未包含 output/（可能无法验证产出物）"
                     alignment_warns=$((alignment_warns + 1))

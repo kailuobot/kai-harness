@@ -1,5 +1,105 @@
 # Changelog
 
+## [0.5.4] - 2026-06-01
+
+维护纪律修复 + 运行时指标收集 + 架构演进阈值。
+
+### 修复
+
+- **verify.sh E 类检查**: 删除 ~30 行无效 N² 循环（检测了不报告），替换为 15 行实用版本（检查 TE handoff 是否包含 design.md + output/）
+- **CHANGELOG 停更**: 补写 v0.5.0-v0.5.3 记录
+
+### 新增
+
+- **templates/metrics-template.md**: PM 在 archive 阶段自动生成执行指标（耗时、驳回次数、修复轮次、SR 审批、断点恢复）
+- **design.md §10**: 新增脚本拆分阈值（verify.sh > 500 行触发拆分）和 PM 上下文监控（固定负载 > 800 行触发精简）
+
+### 变更
+
+- **docs/source-of-truth.md**: 明确定位为"人类维护者手册"，非运行时文件
+- **清理 .claude/plans/**: 删除 8 个历史计划文件（~806 行），git log 已记录变更历史
+
+---
+
+## [0.5.3] - 2026-06-01
+
+残留问题修复轮。
+
+### 修复
+
+- **mh-apply.md**: 修复修复循环步骤编号重复（两个"2."→正确 1-5 序号）
+- **mh-apply.md**: repair_history 示例补充 root_cause_hypothesis + action_taken 字段（AI 跟示例不跟规则）
+- **mh-apply.md**: 补充 repair_snapshots 用途说明（3 条：回退基线、对比分析、收敛判断）
+- **verify.sh E 类**: 新增上下游白名单对齐检查（TE handoff 是否引用 output/）
+- **source-of-truth.md**: 新增 repair_history/repair_snapshots 权威源映射条目
+
+### 变更
+
+- **design.md §10**: Skill 拆分阈值从 300→350 行（mh-apply 319 行含 3 模式+修复+SR 门禁，合理）
+
+---
+
+## [0.5.2] - 2026-05-31
+
+架构优化轮 — 消除结构性冗余，增强运行时验证。
+
+### 核心改进
+
+- **pm.md 合并 dispatch protocol**: 从独立文件合并到 agents/pm.md，减少 PM 运行时文件数
+- **design.md 瘦身**: 513→185 行，从"百科全书"转型为"架构地图"（索引+指向权威源）
+- **verify.sh E 类**: 新增白名单文件存在性检查 + phase-file 一致性检查
+- **handoff-template.md**: 新增 read_files 字段（完成报告中列出实际读取的文件）
+- **state-template.md**: 新增 task_started_at 字段（支持任务超时检测）
+
+### 新增
+
+- **docs/source-of-truth.md**: 权威源映射表 + 三层一致性保障 + 冲突解决规则
+- **verify.sh D 类**: 新增 TODO 残留检测 + 任务超时检测
+
+### 删除
+
+- **templates/pm-dispatch-protocol.md**: 内容已合并到 agents/pm.md
+
+---
+
+## [0.5.1] - 2026-05-31
+
+冗余消除 + PM 上下文减压。
+
+### 修复
+
+- **Skills 质量门禁冗余**: 从逐条展开（4x 冗余）恢复为简洁引用（"验收标准见 pm.md §质量门禁"）
+- **pm.md 头部标注**: 明确运行时读取范围（本文件 + 当前 skill + .state.md + handoff），不读 design.md
+
+### 变更
+
+- **agents/*.md 禁止事项**: 精简为角色特有条目 + "通用禁止事项见 CLAUDE.md §2-4"
+
+---
+
+## [0.5.0] - 2026-05-31
+
+全面重构 — 参考 ref-design.md 架构，重建设计体系。
+
+### 核心改进
+
+- **design.md 重构**: 按 ref-design 目录结构重组（10 章节），保留 v0.4.x 优化成果
+- **PM 六条铁律**: 提炼 PM 运行时最高约束（不跳步、不越权、不盲批、不丢状态、不超限、不放行）
+- **决策上下文卡**: 所有 SR 节点标准化（风险评估 + 变更摘要 + PM 建议 + 回退方案）
+- **修复收敛增强**: repair_snapshots + repair_history（含 root_cause_hypothesis）+ 收敛/发散判断
+
+### 新增
+
+- **templates/examples/**: 5 个金标准示例（requirement-spec, design, code-report, test-report, repair-context）
+- **templates/output-guides/**: 3 个产出结构参考（web-app, backend-api, cli-tool）
+
+### Agent 变更
+
+- 所有角色注入思考框架 + 质量标准 + 反模式 + 交付自检
+- PM 注入质量门禁（BA/SA/DE/TE/UX 各有验收清单）+ 驳回标准
+
+---
+
 ## [0.4.2] - 2026-05-31
 
 金标准示例 + 编排质量 + 文档同步 + output_type 结构参考。
