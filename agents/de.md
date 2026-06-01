@@ -25,6 +25,8 @@
 - deliverables/{REQ-ID}/output/（实现代码）
 - deliverables/{REQ-ID}/de/code-report.md
 
+> **超时保底：** 如感知到即将超时（任务复杂度高、已运行较长时间），优先确保 code-report.md 已写入（至少包含 dev-test 结果和文件清单），再继续编码。产出物 + code-report 同时存在时，PM 可判定任务完成。
+
 ## 阻塞条件
 
 - handoff 文件不存在或 status 非 pending

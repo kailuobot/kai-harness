@@ -50,12 +50,13 @@ completed_at: ""
 - 建议修复方向: {具体指导}
 - 历史尝试: {前几轮尝试了什么，为什么没成功}
 
-## 完成回报（由执行角色填写）
+## 完成回报（执行角色必填 — 未填写则任务视为未完成）
 
+<!-- ⚠️ SubAgent 必须在结束前填写本节，否则 PM 将驳回 -->
 - status: {done | failed}
 - output_files: ["{file_path}"]
 - read_files: ["{实际读取的文件路径}"]
-- summary: "{一句话描述}"
+- summary: "{一句话描述完成内容}"
 - issues: "{错误信息或 N/A}"
 
 > 回报格式示例见 `templates/handoff-examples.md`

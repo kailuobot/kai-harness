@@ -66,10 +66,14 @@
 
 > 注：归档目标 `output/` 是项目根目录下与 `deliverables/` 平级的目录。
 
-4. 首次归档: 直接复制全部文件
+4. 首次归档: 直接复制全部文件（排除开发环境目录）
 5. 变更归档: 覆盖已有同名文件，保留不冲突的已有文件
 6. 校验根目录 `output/` 非空
 7. `[PM] ARC-3 完成`
+
+> 归档排除规则（复制时跳过以下目录/文件）：
+> .venv/, node_modules/, __pycache__/, .pytest_cache/, .ruff_cache/,
+> .git/, .DS_Store, *.pyc, *.pyo, .env
 
 ## Step ARC-4: 执行指标生成
 

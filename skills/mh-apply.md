@@ -97,6 +97,8 @@ DE 一次性开发所有任务 → TE 轻量审计 → 人工确认（唯一审�
 **Step 1: 并行批次开发+审计**
 
 > ⚡ 并行优化：无依赖的 Task 同批并行开发和审计。仅 Claude Code 模式支持并行；Cline 模式退化为逐任务串行。
+>
+> code-report 规则：每个 Task 独立 code-report（`code-report-t{N}.md`）。同批并行的 Task 不得合并 code-report。如 SubAgent 合并产出，PM 在质量门禁时要求补充独立报告。
 
 ```
 读取 plan-action.md 中的 Task 列表和依赖关系（[deps: ...]）
@@ -207,7 +209,7 @@ END FOR
    ```
    SR3 通过标准:
    - [ ] 全量测试通过（TE final-test-report 结论=PASS）
-   - [ ] 需求覆盖无遗漏（覆盖率 = 100%）
+   - [ ] 需求覆盖率 ≥ 95%，且未覆盖项均有降级机制或补充计划
    - [ ] 无 Critical/Major 缺陷
    - [ ] 回归测试通过（已有功能未被破坏）
    ```
@@ -223,6 +225,9 @@ END FOR
      - 全量测试: {通过数}/{总数}
      - 回归测试: {通过/未执行}
      - 工程验证: {lint + 构建状态}
+   
+   降级项确认（覆盖率 < 100% 时必填）:
+     - {未覆盖需求}: {降级机制/补充计划}
    
    风险项（如有）:
      - {降级验证项}
@@ -315,5 +320,9 @@ repair_history:
 ## 异常处理
 
 - SubAgent 回报 status=failed: 检查原因，决定重试或上升
+- SubAgent 超时但产出物已存在:
+  - PM 检查 output/ 中对应 Task 的文件是否完整（与 plan-action.md 描述匹配）
+  - 完整 → 视为成功，PM 代填 code-report（标注"[PM 代填] Agent 超时，产出物完整"）
+  - 不完整 → 重试一次
 - 浏览器环境不可用: 提示用户安装 Playwright 依赖
 - 断点恢复时发现不一致: 以 `deliverables/{REQ-ID}/.state.md` 为准，重新校验文件状态

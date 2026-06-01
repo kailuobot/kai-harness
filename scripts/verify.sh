@@ -186,6 +186,22 @@ check_b() {
         fi
     fi
 
+    # done 阶段：产出物中不应包含开发环境目录
+    if [ "$phase" = "done" ]; then
+        for excluded in .venv node_modules __pycache__ .pytest_cache .ruff_cache; do
+            if [ -d "$OUTPUT_DIR/$excluded" ]; then
+                echo "WARN: output/ 包含 $excluded/（应排除的开发环境目录）"
+            fi
+        done
+        # spec/ 归档完整性（与 archive 阶段互补——done 时再次确认）
+        if [ "$mode" != "fast" ] && [ ! -s "spec/design.md" ]; then
+            echo "WARN: spec/design.md 不存在（ARC-2 归档可能未执行）"
+        fi
+        if [ "$mode" = "full" ] && [ ! -s "spec/requirement-spec.md" ]; then
+            echo "WARN: spec/requirement-spec.md 不存在（ARC-1 归档可能未执行）"
+        fi
+    fi
+
     if [ "$phase" != "propose" ] && [ "$phase" != "apply" ] && [ "$phase" != "archive" ]; then
         echo "INFO: phase=$phase，跳过B类检查"
     fi
@@ -245,6 +261,44 @@ check_c() {
         # fast 模式至少 2 个 handoff（DEV + TEST），standard/full 至少有 propose 阶段的 handoff
         if [ "$mode" = "fast" ] && [ "$phase" = "done" ] && [ "$handoff_count" -lt 2 ]; then
             echo "WARN: fast 模式 phase=done 但 handoff 数量不足（期望 ≥2，实际 $handoff_count）"
+        fi
+
+        # Handoff 完成回报非空检查（phase=done 时所有 handoff 应已完成）
+        if [ "$phase" = "done" ]; then
+            local empty_report_count=0
+            for handoff in "$handoff_dir"/*.md; do
+                [ -f "$handoff" ] || continue
+                if grep -q "^status: pending" "$handoff" 2>/dev/null; then
+                    echo "WARN: $(basename "$handoff") 仍为 pending（完成回报未填写）"
+                    empty_report_count=$((empty_report_count + 1))
+                fi
+                if grep -q '^summary: ""' "$handoff" 2>/dev/null || grep -q "^summary: $" "$handoff" 2>/dev/null; then
+                    echo "WARN: $(basename "$handoff") summary 为空"
+                    empty_report_count=$((empty_report_count + 1))
+                fi
+            done
+            if [ "$empty_report_count" -eq 0 ]; then
+                echo "PASS: 所有 handoff 完成回报已填写"
+            fi
+        fi
+    fi
+
+    # process.log 完整性检查
+    if [ "$phase" = "done" ]; then
+        local log_file="$REQ_DIR/process.log"
+        if [ ! -f "$log_file" ]; then
+            echo "FAIL: phase=done 但 process.log 不存在"
+            ERRORS=$((ERRORS + 1))
+        else
+            local log_lines
+            log_lines=$(wc -l < "$log_file" | tr -d ' ')
+            local min_lines=10
+            [ "$mode" = "fast" ] && min_lines=6
+            if [ "$log_lines" -lt "$min_lines" ]; then
+                echo "WARN: process.log 仅 $log_lines 行（$mode 模式期望 ≥$min_lines）"
+            else
+                echo "PASS: process.log $log_lines 行"
+            fi
         fi
     fi
 

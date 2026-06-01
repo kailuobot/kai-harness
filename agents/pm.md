@@ -56,6 +56,10 @@
 4. 更新 .state.md         → current_step/current_role/current_handoff/task_started_at
 5. 派发 SubAgent          → 注入本角色契约 + handoff + 白名单文件
 6. 接收回报               → SubAgent 填写 handoff 完成回报
+   - 如回报为空（status/output_files/summary 均未填写）：
+     PM 根据产出文件实际情况代填（读取 output/ 文件列表 + report 摘要）
+     标注: "[PM 代填] SubAgent 未回报，PM 根据产出物推断"
+   - 如 status=failed：进入修复循环
 7. 执行质量门禁           → 按下方对应角色的检查清单逐项核对
 8. 推进或驳回             → 通过则更新 .state.md；不通过则写新 handoff 驳回
 ```
