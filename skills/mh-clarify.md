@@ -17,51 +17,28 @@
 
 ⚠️ 关键：phase=done 且 spec/ 有文件时，必须进入 CHANGE 模式，不得识别为 NEW。
 
+### CHANGE 模式 - 增量开发
+
+当 output/ 已有代码且本次需求是在其基础上迭代时：
+1. PM 在 Proposal 中标注"增量开发，基于 output/ 已有代码"
+2. DE 的 handoff 白名单自动包含 `output/`（已有代码）
+3. TE 的回归测试范围覆盖 output/ 全部已有功能
+4. 归档时使用变更归档策略（覆盖同名文件，保留不冲突文件）
+
 ## 环境预检
 
-1. 自动检测项目技术栈（按优先级依次检测）：
-   - Python: 检测 pyproject.toml / requirements.txt / setup.py → language=python
-   - Node.js: 检测 package.json → language=javascript
-   - Go: 检测 go.mod → language=go
-   - Rust: 检测 Cargo.toml → language=rust
-   - Java: 检测 pom.xml / build.gradle → language=java
-   - 无检测结果: language=unknown（后续由用户在 output_type 选择时手动指定）
+1. 扫描项目根目录，检测技术栈：
+   - 语言: 通过配置文件推断（pyproject.toml→Python, package.json→Node.js, go.mod→Go, Cargo.toml→Rust, pom.xml/build.gradle→Java）
+   - 包管理器: 通过 lock 文件推断（poetry.lock→poetry, uv.lock→uv, package-lock.json→npm, yarn.lock→yarn, pnpm-lock.yaml→pnpm, go.sum→go modules, Cargo.lock→cargo）
+   - 测试框架: 通过配置文件中的 test 相关配置推断
+   - 构建工具: 通过 build 相关配置推断
+   - Lint 工具: 通过 lint 配置文件推断（.eslintrc*, ruff.toml, .golangci.yml 等）
 
-2. 检测包管理器：
-   - package-lock.json → npm / yarn.lock → yarn / pnpm-lock.yaml → pnpm
-   - poetry.lock → poetry / uv.lock → uv / 其他 → pip
-   - go.sum → go modules
-   - Cargo.lock → cargo
-   - pom.xml → maven / build.gradle → gradle
+2. 浏览器可用性检测（仅 output_type 涉及 UI 时）：检测 Playwright/Selenium/Cypress 可用性
 
-3. 检测测试框架：
-   - javascript: package.json scripts.test 解析（jest/vitest/mocha）
-   - python: pytest.ini / pyproject.toml [tool.pytest] / setup.cfg
-   - go: 内置 go test
-   - rust: 内置 cargo test
-   - java: pom.xml surefire-plugin / build.gradle test task
+3. 将检测结果写入 `deliverables/{REQ-ID}/.state.md` 的 tech_stack 和 env 字段
 
-4. 检测构建工具：
-   - javascript: package.json scripts.build（webpack/vite/tsc）
-   - python: pyproject.toml [build-system] / setup.py
-   - go: go build
-   - rust: cargo build
-   - java: maven / gradle
-
-5. 检测 lint 工具：
-   - javascript: .eslintrc* / prettier.config* / biome.json
-   - python: ruff.toml / pyproject.toml [tool.ruff] / .flake8
-   - go: .golangci.yml
-   - rust: clippy（Cargo.toml）
-   - java: checkstyle.xml / spotbugs
-
-6. 浏览器可用性检测（仅当 output_type 涉及 UI 时执行）：
-   - 检测 Playwright / Selenium / Cypress 可用性
-   - 记录 env.browser_available
-
-7. 将所有检测结果写入 `deliverables/{REQ-ID}/.state.md` 的 tech_stack 和 env 字段
-
-8. 如检测结果不完整或 language=unknown，向用户展示检测结果并请求补充：
+4. 如检测结果不完整或 language=unknown，向用户展示检测结果并请求补充：
    ```
    [环境检测结果]
    语言: {language}
@@ -237,6 +214,10 @@ Proposal 草稿完成后，PM 根据需求规模向用户推荐模式：
 
 ## 背景与目标
 {为什么要做这件事}
+
+## 功能模块（至少列出主要模块）
+- {模块1}: {一句话描述}
+- {模块2}: {一句话描述}
 
 ## 范围
 - 包含: {列举}

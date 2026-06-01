@@ -177,11 +177,11 @@ output_type 与 mode 正交。详见 CLAUDE.md §7 + skills/mh-clarify.md Step 3
 
 ## 10. 架构演进方向（未来）
 
-| 方向 | 触发条件 | 做法 |
-|------|---------|------|
-| Skill 按需加载 | 单个 skill > 350 行 | 拆分为 main.md + 子文件 |
-| 脚本拆分 | verify.sh > 500 行 | 拆分为 verify-{A,B,C,D,E}.sh + verify.sh 入口 |
-| PM 上下文监控 | PM 固定负载 > 800 行 | 精简 pm.md 或 skill 文件 |
-| 状态机引擎 | PM 频繁写错 .state.md | scripts/state-engine.sh 封装转移 |
-| 契约测试 | Handoff 格式频繁不匹配 | verify.sh E 类检查增强 |
-| 修复快照回退 | 修复发散需要代码回退 | repair_snapshots + git stash |
+| 方向 | 触发条件 | 做法 | 状态 |
+|------|---------|------|------|
+| Skill 按需加载 | 单个 skill > 350 行 | 拆分为 main.md + 子文件 | ✅ done (v0.6.1, mh-apply) |
+| 脚本拆分 | verify.sh > 500 行 | 拆分为 verify-{A,B,C,D,E}.sh + verify.sh 入口 | planned |
+| PM 上下文监控 | PM 固定负载 > 800 行 | 精简 pm.md 或 skill 文件 | planned |
+| 状态机引擎 | PM 频繁写错 .state.md | scripts/state-engine.sh 封装转移 | planned |
+| 契约测试 | Handoff 格式频繁不匹配 | verify.sh E 类检查增强 | ✅ done (v0.5.3) |
+| 修复快照回退 | 修复发散需要代码回退 | repair_snapshots + git stash | planned |

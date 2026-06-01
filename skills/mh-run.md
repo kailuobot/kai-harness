@@ -17,14 +17,24 @@
 
 ---
 
-## 推进触发条件
+## 流程控制（推进与停止）
 
-| 当前阶段完成标记 | 推进动作 |
-|---|---|
-| current_step=INIT-DONE | `[PM] ✦ 自动推进 → propose 阶段` 然后读取并执行 skills/mh-propose.md |
-| current_step=PROPOSE-DONE（fast/standard）或 SR1 通过（full） | `[PM] ✦ 自动推进 → apply 阶段` 然后读取并执行 skills/mh-apply.md |
-| current_step=SR3-DONE | `[PM] ✦ 自动推进 → archive 阶段`，重置 repair_round=0, repair_task=""，然后读取并执行 skills/mh-archive.md |
-| phase=done | `[PM] ✦ 全流程完成` 打印最终摘要 |
+| 事件 | 动作 | 暂停等待用户 |
+|------|------|-------------|
+| current_step=INIT-DONE | 自动推进 → propose | 否 |
+| Proposal 确认（clarify Step 5） | 等待用户确认 Proposal | ✅ 是 |
+| 模式选择（clarify Step 4） | 等待用户选择 fast/standard/full | ✅ 是 |
+| SR1 审批（full 模式） | 等待用户通过/驳回 | ✅ 是 |
+| current_step=PROPOSE-DONE / SR1通过 | 自动推进 → apply | 否 |
+| Batch 人工确认 | 等待用户确认 | ✅ 是 |
+| SR2 审批 | 等待用户通过/驳回 | ✅ 是 |
+| SR3 审批 | 等待用户通过/驳回 | ✅ 是 |
+| current_step=SR3-DONE | 自动推进 → archive，重置 repair_round=0, repair_task="" | 否 |
+| SR4 审批（standard/full） | 等待用户确认结项 | ✅ 是 |
+| Wireframe 审批（ppt） | 等待用户确认版式 | ✅ 是 |
+| 修复循环发散（连续 2 轮） | 上升人工 | ✅ 是 |
+| 修复循环耗尽（≥5 轮） | 上升人工 | ✅ 是 |
+| phase=done | 打印最终摘要 | 结束 |
 
 ---
 
@@ -115,25 +125,6 @@ PM 恢复时检测 `deliverables/{REQ-ID}/.state.md` 中 `auto_advance: true`：
 项目状态: DONE
 ══════════════════════════════════════
 ```
-
----
-
-## 停止条件完整枚举
-
-自动推进模式下，PM 在以下情况必须暂停等待用户：
-
-| 停止条件 | 触发场景 | 恢复方式 |
-|---------|---------|---------|
-| Proposal 确认 | clarify 阶段 Step 5 | 用户确认 Proposal |
-| 模式选择 | clarify 阶段 Step 4 | 用户选择 fast/standard/full |
-| SR1 审批 | propose 阶段（full 模式） | 用户通过/驳回 |
-| Batch 人工确认 | apply 阶段每个 Batch 完成后 | 用户确认 |
-| SR2 审批 | apply 阶段所有 Task 完成后 | 用户通过/驳回 |
-| SR3 审批 | apply 阶段最终审计后 | 用户通过/驳回 |
-| SR4 审批 | archive 阶段（standard/full） | 用户确认结项 |
-| Wireframe 审批 | output_type=ppt 时 | 用户确认版式 |
-| 修复循环发散 | repair_history 连续 2 轮发散 | 用户判断修复方向 |
-| 修复循环耗尽 | repair_round ≥ 5 | 用户介入修复 |
 
 ---
 

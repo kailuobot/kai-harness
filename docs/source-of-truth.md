@@ -15,7 +15,7 @@
 | 角色职责与禁止事项 | agents/*.md | docs/design.md §3 |
 | 角色质量标准与思考框架 | agents/*.md | — |
 | 流程步骤与 mode 裁剪 | skills/mh-*.md | docs/design.md §4 |
-| PM 调度协议 | templates/pm-dispatch-protocol.md | docs/design.md §4.1 |
+| PM 调度协议 | agents/pm.md "调度协议"节 | docs/design.md §4.1 |
 | PM 质量门禁清单 | agents/pm.md "质量门禁"节 | skills 中引用 |
 | SR Gate 通过标准 | skills/mh-propose.md, mh-apply.md, mh-archive.md | docs/design.md §4.5 |
 | 状态 schema | templates/state-template.md | docs/design.md §4.4 |

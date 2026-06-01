@@ -276,6 +276,10 @@ check_c() {
                     echo "WARN: $(basename "$handoff") summary 为空"
                     empty_report_count=$((empty_report_count + 1))
                 fi
+                if grep -q 'output_files: \[\]' "$handoff" 2>/dev/null || grep -q '^output_files: $' "$handoff" 2>/dev/null; then
+                    echo "WARN: $(basename "$handoff") output_files 为空"
+                    empty_report_count=$((empty_report_count + 1))
+                fi
             done
             if [ "$empty_report_count" -eq 0 ]; then
                 echo "PASS: 所有 handoff 完成回报已填写"
