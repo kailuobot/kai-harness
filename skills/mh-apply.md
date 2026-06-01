@@ -274,10 +274,14 @@ repair_history:
     error_type: "test_failure"
     failed_count: 3
     summary: "API endpoint 返回 500"
+    root_cause_hypothesis: "UserService.create() 返回 null"
+    action_taken: "修复 create() 返回值，确保返回 user 对象"
   - round: 2
     error_type: "test_failure"
     failed_count: 2
     summary: "修复了连接问题，仍有 2 个断言失败"
+    root_cause_hypothesis: "返回值修复后，响应体序列化缺少 user_id 字段"
+    action_taken: "补充响应体映射，确保包含 user_id"
 ```
 
 **提前升级条件**（不等到第 5 轮）：
@@ -287,19 +291,21 @@ repair_history:
 
 ### 修复派发
 
+> repair_snapshots 用途：PM 对比各轮 hash 确认产出物在变化；发散升级时附带快照历史让用户看到完整变化轨迹；如需回退可定位对应 code-report-r{N}.md。
+
 1. 修复派发前，PM 执行快照：
    - 计算当前 output/ 的文件 hash（`find output/ -type f | xargs md5sum | md5sum`）
    - 将 hash 和当前 code-report 路径追加到 `.state.md` repair_snapshots
 2. 更新 `deliverables/{REQ-ID}/.state.md`: repair_round={R+1}, repair_task=Task-{N}
-2. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
+3. 写入新 handoff: `deliverables/{REQ-ID}/handoffs/{REQ-ID}-DEV1-T{N}-R{R+1}.md`
    - 使用 handoff 模板中的"修复上下文"节，填写：
      - 失败特征：{错误类型 + 关键错误信息}
      - 根因假设：{PM 的分析}
      - 建议修复方向：{具体指导，不是"请修复"}
      - 历史尝试：{前几轮做了什么、为什么没成功}
    - 白名单追加：TE 的失败报告路径
-3. `[PM] 派发修复给 DE（轮次 {R+1}/5，{收敛/发散}）`
-4. DE 修复 → TE 重新审计
+4. `[PM] 派发修复给 DE（轮次 {R+1}/5，{收敛/发散}）`
+5. DE 修复 → TE 重新审计
 5. 审计通过:
    - 更新 `.state.md`: repair_round=0, repair_task="", repair_history=[]
 6. 达到升级条件:

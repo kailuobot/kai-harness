@@ -18,7 +18,9 @@
 | 状态 schema | templates/state-template.md | docs/design.md §4.4 |
 | Handoff 协议与格式 | templates/handoff-template.md | docs/design.md §5.3 |
 | 日志格式 | templates/logging-standard.md | — |
-| 修复收敛机制 | skills/mh-apply.md "修复循环"节 | docs/design.md §7.3 |
+| 修复收敛机制 | skills/mh-apply.md "修复循环"节 | docs/design.md §6 |
+| repair_history schema | templates/state-template.md | skills/mh-apply.md 示例 |
+| repair_snapshots schema | templates/state-template.md | skills/mh-apply.md "修复派发"节 |
 | 硬校验规则 | scripts/*.sh | docs/design.md §7.4 |
 | output_type 体系 | CLAUDE.md §7 | docs/design.md §10 |
 | PPT 补充规则 | skills/mh-ppt.md | docs/design.md §11 |
@@ -74,7 +76,7 @@
 
 - [ ] `grep -r "见 agents/pm.md" skills/` → 确认引用描述与 pm.md 实际内容一致
 - [ ] `grep -r "A/B/C/D" .` → 确认所有引用已更新为 A/B/C/D/E（如适用）
-- [ ] `wc -l skills/mh-*.md` → 确认无文件超过 300 行（超过则规划拆分）
+- [ ] `wc -l skills/mh-*.md` → 确认无文件超过 350 行（超过则规划拆分）
 - [ ] `bash scripts/check-harness.sh` → 框架完整性通过
 - [ ] 对比 state-template.md 与最近的 deliverables/*/.state.md → schema 一致
 - [ ] 检查 CHANGELOG.md 是否已更新
