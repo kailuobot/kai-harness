@@ -192,6 +192,10 @@ output_type 与 mode（fast/standard/full）正交：mode 控制流程严谨度�
 
 ### 用户操作步骤
 
+> **推荐：** 直接输入 `/mh-run` 即可启动全流程自动推进，框架会按 clarify → propose → apply → archive 顺序自动衔接，仅在人工审批节点暂停等待确认。适合大多数场景。
+>
+> 如需手动分步控制，可按以下步骤逐个执行：
+
 **Step 1: 需求初始化与澄清**
 
 在对话框输入：
