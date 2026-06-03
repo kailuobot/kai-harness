@@ -31,25 +31,7 @@ AI-Harness 是一个 Agent 驱动的研发流程框架，通过四层递进防�
 
 核心流程：`/mh-clarify` → `/mh-propose` → `/mh-apply` → `/mh-archive`（或 `/mh-run` 全自动推进）
 
-关键目录：
-- `deliverables/` — 活跃需求的工作目录，每个 REQ-ID 一个子目录
-- `deliverables/{REQ-ID}/.state.md` — 该需求的完整流程状态（唯一真相源）
-- `deliverables/{REQ-ID}/handoffs/` — 角色间信息传递文件
-- `deliverables/{REQ-ID}/output/` — 开发产出物
-- `spec/` — 归档后的需求/设计基线
-- `output/` — 归档后的最终产出物
-- `reference/` — 用户提供的需求参考资料
-- `templates/` — handoff 模板、状态 schema、PPT 模板等
-
-状态管理：`deliverables/.state.md` 存储全局活跃 REQ-ID 指针，各需求详细状态在 `deliverables/{REQ-ID}/.state.md`（schema 定义见 `templates/state-template.md`）。
-
----
-
-# AI-Harness 全局纪律
-
-> AI Agent 驱动的研发流程框架。四层防线：Rules → Skills → Agents+Workflow → Scripts+人工。
-
-## 角色
+### 角色
 
 | 角色 | 职责 | 定义文件 |
 |------|------|---------|
@@ -60,7 +42,7 @@ AI-Harness 是一个 Agent 驱动的研发流程框架，通过四层递进防�
 | TE | 审计验证 | agents/te.md |
 | UX | 视觉/结构设计 | agents/ux.md |
 
-## 命令
+### 命令
 
 | 命令 | 作用 | Skill 文件 |
 |------|------|-----------|
@@ -70,6 +52,36 @@ AI-Harness 是一个 Agent 驱动的研发流程框架，通过四层递进防�
 | /mh-archive | 归档+结项 | skills/mh-archive.md |
 | /mh-run | 全流程自动推进 | skills/mh-run.md |
 | /mh-ppt | PPT 类 HTML 页面开发 | skills/mh-ppt.md |
+
+### 执行模式（mode）
+
+| mode | 说明 |
+|------|------|
+| fast | 精简流程，跳过部分审批节点（SR1/SR2 可 skip），适合小需求快速迭代 |
+| standard | 标准流程，保留核心审批节点，适合大多数需求 |
+| full | 完整流程，所有审批节点强制执行，BA 需求分析独立执行，适合复杂/高风险需求 |
+
+mode 在 clarify 阶段确定，写入 .state.md，控制流程严谨度。与 output_type 正交。
+
+### Handoff 命名约定
+
+格式：`{REQ-ID}-{STEP}{轮次}-R{round}.md`
+
+示例：`REQ002-DEV1-R1.md`、`REQ002-TEST1-R1.md`
+
+handoff 文件不可修改，重试时创建新文件（递增 round 后缀）。
+
+### 关键目录
+- `deliverables/` — 活跃需求的工作目录，每个 REQ-ID 一个子目录
+- `deliverables/{REQ-ID}/.state.md` — 该需求的完整流程状态（唯一真相源）
+- `deliverables/{REQ-ID}/handoffs/` — 角色间信息传递文件
+- `deliverables/{REQ-ID}/output/` — 开发产出物
+- `spec/` — 归档后的需求/设计基线
+- `output/` — 归档后的最终产出物
+- `reference/` — 用户提供的需求参考资料
+- `templates/` — handoff 模板、状态 schema、PPT 模板等
+
+状态管理：`deliverables/.state.md` 存储全局活跃 REQ-ID 指针，各需求详细状态在 `deliverables/{REQ-ID}/.state.md`（schema 定义见 `templates/state-template.md`）。
 
 ---
 
