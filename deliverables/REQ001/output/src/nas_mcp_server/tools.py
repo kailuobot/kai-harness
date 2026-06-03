@@ -12,6 +12,8 @@ import os
 import shutil
 from pathlib import Path
 
+from mcp import types
+
 from .config import ServerConfig
 from .sandbox import (
     PathNotFoundError,
@@ -319,23 +321,25 @@ def register_tools(server, config: ServerConfig) -> None:
         server._tool_handlers[name] = _make_handler
 
     @server.list_tools()
-    async def handle_list_tools():
+    async def handle_list_tools() -> list[types.Tool]:
         tools = []
         for name, schema in TOOL_SCHEMAS.items():
-            tools.append({
-                "name": name,
-                "description": TOOL_DESCRIPTIONS[name],
-                "inputSchema": schema,
-            })
+            tools.append(types.Tool(
+                name=name,
+                description=TOOL_DESCRIPTIONS[name],
+                inputSchema=schema,
+            ))
         return tools
 
     @server.call_tool()
-    async def handle_call_tool(name: str, arguments: dict):
+    async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         if name not in _TOOL_DISPATCH:
-            return json.dumps({
+            text = json.dumps({
                 "error": {
                     "code": "UNKNOWN_TOOL",
                     "message": f"Unknown tool: {name}",
                 }
             })
-        return await _TOOL_DISPATCH[name](arguments, config)
+            return [types.TextContent(type="text", text=text)]
+        result = await _TOOL_DISPATCH[name](arguments, config)
+        return [types.TextContent(type="text", text=result)]
