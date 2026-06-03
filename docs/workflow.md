@@ -1,4 +1,4 @@
-# Mini-Harness Workflow
+# AI-Harness Workflow
 
 PM 调度手册。PM 必须严格按此手册执行，不得跳步或自行决策技术问题。
 

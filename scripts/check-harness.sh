@@ -1,13 +1,13 @@
 #!/bin/bash
 # check-harness.sh - 框架自检脚本
-# 验证 mini-harness 框架文件完整性
+# 验证 AI-Harness 框架文件完整性
 # 退出码: 0=框架完整, 1=框架损坏
 
 set -euo pipefail
 
 ERRORS=0
 
-echo "=== Mini-Harness 框架自检 ==="
+echo "=== AI-Harness 框架自检 ==="
 
 # 1. 核心配置文件
 echo ""

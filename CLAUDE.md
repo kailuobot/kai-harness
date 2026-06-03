@@ -1,4 +1,4 @@
-# Mini-Harness 全局纪律
+# AI-Harness 全局纪律
 
 > AI Agent 驱动的研发流程框架。四层防线：Rules → Skills → Agents+Workflow → Scripts+人工。
 

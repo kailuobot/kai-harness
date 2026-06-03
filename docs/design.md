@@ -1,4 +1,4 @@
-# Mini-Harness 设计文档
+# AI-Harness 设计文档
 
 > 本文档是架构地图，不是百科全书。每个概念一句话 + 指向权威源。
 > 执行权威为 skills/*.md 和 agents/*.md，冲突时以它们为准。
@@ -35,7 +35,7 @@ Scripts + 人工 (SR1-4)   → 硬校验（强：退出码为唯一判据）
 ### 目录结构
 
 ```
-mini-harness/
+ai-harness/
 ├── CLAUDE.md                    全局规则
 ├── agents/                      6 角色契约（含 PM 调度协议+质量门禁）
 ├── skills/                      8 个执行规程
