@@ -13,6 +13,7 @@ spec/baselines/
 
 # output 产物（使用者文件）
 output/
+!deliverables/REQ001/output/
 
 # reference 参考资料（使用者文件）
 reference/
