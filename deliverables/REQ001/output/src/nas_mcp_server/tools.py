@@ -1,7 +1,6 @@
-"""MCP file operation tools for NAS server.
+"""MCP tools for NAS server.
 
-Provides 7 tools: list_directory, read_file, write_file, delete_file,
-create_directory, delete_directory, move_file.
+Provides 7 file operation tools + 3 download tools (aria2 + subliminal).
 
 All paths are validated through the security sandbox before any filesystem
 operation is performed.
@@ -15,6 +14,11 @@ from pathlib import Path
 from mcp import types
 
 from .config import ServerConfig
+from .download_tools import (
+    DOWNLOAD_TOOL_DESCRIPTIONS,
+    DOWNLOAD_TOOL_SCHEMAS,
+    _DOWNLOAD_TOOL_DISPATCH,
+)
 from .sandbox import (
     PathNotFoundError,
     PathTraversalError,
@@ -300,7 +304,7 @@ _TOOL_DISPATCH = {
 
 
 def register_tools(server, config: ServerConfig) -> None:
-    """Register all file operation tools on the MCP server.
+    """Register all tools (file operations + download) on the MCP server.
 
     Uses @server.list_tools() and @server.call_tool() decorators
     from the mcp SDK to register tools with the MCP tool router.
@@ -312,7 +316,7 @@ def register_tools(server, config: ServerConfig) -> None:
     # Store handlers on server for testing access
     server._tool_handlers = {}  # type: ignore[attr-defined]
 
-    # Create bound handlers that capture config
+    # Create bound handlers for file operation tools
     for name, handler_fn in _TOOL_DISPATCH.items():
 
         async def _make_handler(args, _fn=handler_fn):
@@ -320,20 +324,33 @@ def register_tools(server, config: ServerConfig) -> None:
 
         server._tool_handlers[name] = _make_handler
 
+    # Create bound handlers for download tools
+    for name, handler_fn in _DOWNLOAD_TOOL_DISPATCH.items():
+
+        async def _make_download_handler(args, _fn=handler_fn):
+            return await _fn(args, config)
+
+        server._tool_handlers[name] = _make_download_handler
+
+    # Merge all schemas and descriptions
+    all_schemas = {**TOOL_SCHEMAS, **DOWNLOAD_TOOL_SCHEMAS}
+    all_descriptions = {**TOOL_DESCRIPTIONS, **DOWNLOAD_TOOL_DESCRIPTIONS}
+    all_dispatch = {**_TOOL_DISPATCH, **_DOWNLOAD_TOOL_DISPATCH}
+
     @server.list_tools()
     async def handle_list_tools() -> list[types.Tool]:
         tools = []
-        for name, schema in TOOL_SCHEMAS.items():
+        for name, schema in all_schemas.items():
             tools.append(types.Tool(
                 name=name,
-                description=TOOL_DESCRIPTIONS[name],
+                description=all_descriptions[name],
                 inputSchema=schema,
             ))
         return tools
 
     @server.call_tool()
     async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-        if name not in _TOOL_DISPATCH:
+        if name not in all_dispatch:
             text = json.dumps({
                 "error": {
                     "code": "UNKNOWN_TOOL",
@@ -341,5 +358,5 @@ def register_tools(server, config: ServerConfig) -> None:
                 }
             })
             return [types.TextContent(type="text", text=text)]
-        result = await _TOOL_DISPATCH[name](arguments, config)
+        result = await all_dispatch[name](arguments, config)
         return [types.TextContent(type="text", text=result)]

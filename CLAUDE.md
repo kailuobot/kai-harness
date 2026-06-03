@@ -1,3 +1,50 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 开发命令
+
+```bash
+# 框架自检（验证所有框架文件完整性）
+npm run check        # 或 ./scripts/check-harness.sh
+
+# 产出物校验（按检查类型运行，支持 A/B/C/D/E/all）
+npm run verify       # 或 ./scripts/verify.sh [A|B|C|D|E|all] [REQ-ID]
+
+# 基线对比
+npm run baseline     # 或 ./scripts/baseline.sh
+
+# PPT 产出物校验
+./scripts/verify-ppt.sh [REQ-ID]
+```
+
+校验脚本以退出码判定：0=通过，1=失败。verify.sh 会自动从 `deliverables/.state.md` 读取当前 REQ-ID。
+
+## 架构概览
+
+AI-Harness 是一个 Agent 驱动的研发流程框架，通过四层递进防线保证交付质量：
+
+1. **Rules**（CLAUDE.md）— 全局行为约束，最高优先级
+2. **Skills**（skills/*.md）— 标准操作规程 SOP，每个 skill 封装固定步骤
+3. **Agents + Workflow**（agents/*.md + docs/workflow.md）— 6 角色制衡，通过 handoff 文件传递信息
+4. **Scripts + 人工**（scripts/*.sh）— 硬校验，退出码为唯一判据
+
+核心流程：`/mh-clarify` → `/mh-propose` → `/mh-apply` → `/mh-archive`（或 `/mh-run` 全自动推进）
+
+关键目录：
+- `deliverables/` — 活跃需求的工作目录，每个 REQ-ID 一个子目录
+- `deliverables/{REQ-ID}/.state.md` — 该需求的完整流程状态（唯一真相源）
+- `deliverables/{REQ-ID}/handoffs/` — 角色间信息传递文件
+- `deliverables/{REQ-ID}/output/` — 开发产出物
+- `spec/` — 归档后的需求/设计基线
+- `output/` — 归档后的最终产出物
+- `reference/` — 用户提供的需求参考资料
+- `templates/` — handoff 模板、状态 schema、PPT 模板等
+
+状态管理：`deliverables/.state.md` 存储全局活跃 REQ-ID 指针，各需求详细状态在 `deliverables/{REQ-ID}/.state.md`（schema 定义见 `templates/state-template.md`）。
+
+---
+
 # AI-Harness 全局纪律
 
 > AI Agent 驱动的研发流程框架。四层防线：Rules → Skills → Agents+Workflow → Scripts+人工。
