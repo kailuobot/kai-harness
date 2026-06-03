@@ -1,0 +1,18 @@
+[Unit]
+Description=NAS File Manager MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=nas-mcp
+Group=nas-mcp
+WorkingDirectory=/opt/nas-mcp-server
+EnvironmentFile=/opt/nas-mcp-server/.env
+ExecStart=/opt/nas-mcp-server/.venv/bin/python -m nas_mcp_server
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

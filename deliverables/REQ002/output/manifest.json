@@ -1,0 +1,106 @@
+{
+  "name": "nas-file-manager",
+  "version": "1.0.0",
+  "description": "NAS 文件管理 MCP Server - 提供文件增删改查操作",
+  "author": "user",
+  "transport": {
+    "type": "sse",
+    "url": "http://localhost:8080/sse"
+  },
+  "tools": [
+    {
+      "name": "list_directory",
+      "description": "List directory contents (files, types, sizes). Supports recursive listing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "Directory path to list"},
+          "recursive": {
+            "type": "boolean",
+            "description": "List recursively (default: false)",
+            "default": false
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "read_file",
+      "description": "Read text content of a file. Handles encoding issues.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "File path to read"}
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "write_file",
+      "description": "Write text content to a file. Creates parent directories if needed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "File path to write"},
+          "content": {"type": "string", "description": "Content to write"}
+        },
+        "required": ["path", "content"]
+      }
+    },
+    {
+      "name": "delete_file",
+      "description": "Delete a file. Returns error if file does not exist.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "File path to delete"}
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "create_directory",
+      "description": "Create a directory. Supports recursive parent creation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "Directory path to create"},
+          "parents": {
+            "type": "boolean",
+            "description": "Create parent directories (default: true)",
+            "default": true
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "delete_directory",
+      "description": "Delete a directory. Non-recursive mode fails on non-empty dirs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "Directory path to delete"},
+          "recursive": {
+            "type": "boolean",
+            "description": "Delete recursively (default: false)",
+            "default": false
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "move_file",
+      "description": "Move a file or directory from source to destination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {"type": "string", "description": "Source path"},
+          "destination": {"type": "string", "description": "Destination path"}
+        },
+        "required": ["source", "destination"]
+      }
+    }
+  ]
+}
