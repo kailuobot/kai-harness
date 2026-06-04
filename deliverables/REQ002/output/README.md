@@ -40,8 +40,8 @@ pip install -e ".[dev]"
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
 | NAS_ROOT_DIR | 文件操作根目录（沙箱边界） | /data |
-| NAS_MCP_HOST | 监听地址 | 0.0.0.0 |
-| NAS_MCP_PORT | 监听端口 | 8080 |
+| MCP_HOST | 监听地址 | 0.0.0.0 |
+| MCP_PORT | 监听端口 | 8080 |
 
 ## 启动
 
@@ -53,7 +53,7 @@ nas-mcp-server
 python -m nas_mcp_server
 
 # 指定根目录和端口
-NAS_ROOT_DIR=/mnt/nas NAS_MCP_PORT=9090 nas-mcp-server
+NAS_ROOT_DIR=/mnt/nas MCP_PORT=9090 nas-mcp-server
 ```
 
 ## OpenClaw 集成

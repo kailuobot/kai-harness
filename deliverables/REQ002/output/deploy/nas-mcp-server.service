@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=nas-mcp
-Group=nas-mcp
+User=root
+Group=root
 WorkingDirectory=/opt/nas-mcp-server
 EnvironmentFile=/opt/nas-mcp-server/.env
 ExecStart=/opt/nas-mcp-server/.venv/bin/python -m nas_mcp_server

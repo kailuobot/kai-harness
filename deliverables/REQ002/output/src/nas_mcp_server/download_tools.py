@@ -2,12 +2,16 @@
 
 Provides 3 tools: download_movie, download_subtitle, download_status.
 - download_movie: adds a download task via aria2 JSON-RPC
-- download_subtitle: fetches Chinese subtitles via subliminal CLI
+- download_subtitle: fetches Chinese subtitles via subliminal
 - download_status: queries aria2 for task progress
 """
 
 import asyncio
 import json
+import os
+import shutil
+import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -35,12 +39,21 @@ DOWNLOAD_TOOL_SCHEMAS = {
     "download_subtitle": {
         "type": "object",
         "properties": {
-            "path": {
+            "movie_name": {
                 "type": "string",
-                "description": "Path to the video file on NAS",
+                "description": "Movie name or title to search for subtitles",
+            },
+            "movie_dir": {
+                "type": "string",
+                "description": "Relative path to save subtitle (e.g. 电影/欧美/澳洲乱世情). Default: root dir",
+            },
+            "language": {
+                "type": "string",
+                "description": "Subtitle language code (default: zh, Chinese)",
+                "default": "zh",
             },
         },
-        "required": ["path"],
+        "required": ["movie_name"],
     },
     "download_status": {
         "type": "object",
@@ -56,7 +69,7 @@ DOWNLOAD_TOOL_SCHEMAS = {
 
 DOWNLOAD_TOOL_DESCRIPTIONS = {
     "download_movie": "Download a movie via aria2. Accepts HTTP/HTTPS URLs or magnet links.",
-    "download_subtitle": "Download Chinese subtitles for a video file using subliminal.",
+    "download_subtitle": "Download Chinese subtitles for a movie via subliminal. Provide movie_name and optionally movie_dir (relative path) and language (default zh).",
     "download_status": "Check download progress. Query a specific GID or list all active downloads.",
 }
 
@@ -70,21 +83,12 @@ def _op_error_json(message: str) -> str:
 
 
 async def _aria2_rpc(config: ServerConfig, method: str, params: list | None = None) -> dict:
-    """Call aria2 JSON-RPC endpoint."""
     url = f"http://{config.aria2_host}:{config.aria2_port}/jsonrpc"
-    payload = {
-        "jsonrpc": "2.0",
-        "id": str(uuid.uuid4()),
-        "method": method,
-        "params": [],
-    }
-
+    payload = {"jsonrpc": "2.0", "id": str(uuid.uuid4()), "method": method, "params": []}
     if config.aria2_secret:
         payload["params"].append(f"token:{config.aria2_secret}")
-
     if params:
         payload["params"].extend(params)
-
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=payload) as resp:
             result = await resp.json()
@@ -94,13 +98,10 @@ async def _aria2_rpc(config: ServerConfig, method: str, params: list | None = No
 
 
 async def _download_movie(arguments: dict, config: ServerConfig) -> str:
-    """Add a download task to aria2."""
     url = arguments["url"]
     dir_path = arguments.get("dir")
-
     if not url.startswith(("http://", "https://", "magnet:")):
         return _op_error_json("URL must be http://, https://, or magnet: link")
-
     options = {}
     if dir_path:
         try:
@@ -110,63 +111,74 @@ async def _download_movie(arguments: dict, config: ServerConfig) -> str:
             return _error_json(e)
     else:
         options["dir"] = str(config.root_dir)
-
     try:
-        if url.startswith("magnet:"):
-            gid = await _aria2_rpc(config, "aria2.addUri", [[url], options])
-        else:
-            gid = await _aria2_rpc(config, "aria2.addUri", [[url], options])
+        gid = await _aria2_rpc(config, "aria2.addUri", [[url], options])
         return json.dumps({"gid": gid, "status": "added", "dir": options["dir"]})
     except Exception as e:
         return _op_error_json(f"aria2 RPC failed: {e}")
 
 
 async def _download_subtitle(arguments: dict, config: ServerConfig) -> str:
-    """Download Chinese subtitles using subliminal."""
-    path_str = arguments["path"]
+    """Download Chinese subtitles via subliminal text search."""
+    movie_name = arguments["movie_name"]
+    movie_dir = arguments.get("movie_dir", "")
+    language = arguments.get("language", "zh")
 
+    # Resolve target directory
     try:
-        resolved = validate_path(path_str, config.root_dir, must_exist=True)
+        if movie_dir:
+            resolved_dir = validate_path(movie_dir, config.root_dir, must_exist=True)
+        else:
+            resolved_dir = config.root_dir
     except SandboxError as e:
         return _error_json(e)
 
-    if not resolved.is_file():
-        return _op_error_json(f"Path is not a file: {path_str}")
-
-    cmd = [
-        "subliminal", "download",
-        "-l", "zh",
-        str(resolved),
-    ]
-
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await proc.communicate()
-
-        if proc.returncode != 0:
-            return _op_error_json(
-                f"subliminal failed (exit {proc.returncode}): {stderr.decode().strip()}"
-            )
-
+    # Find subliminal binary (from .venv prefix)
+    subliminal_bin = Path(sys.prefix) / "bin" / "subliminal"
+    if not subliminal_bin.exists():
+        subliminal_bin = Path(sys.prefix) / ".." / "bin" / "subliminal"
+    if not subliminal_bin.exists():
         return json.dumps({
-            "status": "completed",
-            "video": str(resolved),
-            "output": stdout.decode().strip(),
+            "error": {"code": "TOOL_NOT_FOUND", "message": "subliminal not installed. Run: pip install subliminal"}
         })
-    except FileNotFoundError:
-        return _op_error_json("subliminal not found. Install with: pip install subliminal")
-    except Exception as e:
-        return _op_error_json(f"subliminal execution failed: {e}")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            env = os.environ.copy()
+            env["XDG_CACHE_HOME"] = tmpdir
+            proc = await asyncio.create_subprocess_exec(
+                str(subliminal_bin), "download", "-l", language, movie_name,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+                cwd=tmpdir,
+            )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
+        except asyncio.TimeoutError:
+            return json.dumps({"error": {"code": "TIMEOUT", "message": "Subtitle download timed out"}})
+        except Exception as e:
+            return json.dumps({"error": {"code": "SUBTITLE_ERROR", "message": str(e)}})
+
+        # Find subtitle files
+        sub_files = list(Path(tmpdir).glob("*.srt")) + list(Path(tmpdir).glob("*.ass"))
+        if not sub_files:
+            err_text = stderr.decode()[:500] if stderr else ""
+            return json.dumps({
+                "warning": {"code": "NO_SUBTITLES", "message": f"No subtitle found for '{movie_name}'. Output: {err_text}"}
+            })
+
+        # Copy subtitles to target directory
+        copied = []
+        for sf in sub_files:
+            dest = resolved_dir / sf.name
+            shutil.copy2(str(sf), str(dest))
+            copied.append(sf.name)
+
+        return json.dumps({"success": True, "subtitles": copied, "directory": str(resolved_dir)})
 
 
 async def _download_status(arguments: dict, config: ServerConfig) -> str:
-    """Query aria2 download progress."""
     gid = arguments.get("gid")
-
     try:
         if gid:
             status = await _aria2_rpc(config, "aria2.tellStatus", [gid])
@@ -185,18 +197,15 @@ async def _download_status(arguments: dict, config: ServerConfig) -> str:
 
 
 def _format_status(status: dict) -> dict:
-    """Extract key fields from aria2 status response."""
     total = int(status.get("totalLength", 0))
     completed = int(status.get("completedLength", 0))
     speed = int(status.get("downloadSpeed", 0))
     progress = (completed / total * 100) if total > 0 else 0
-
     files = []
     for f in status.get("files", []):
         path = f.get("path", "")
         if path:
             files.append(Path(path).name)
-
     return {
         "gid": status.get("gid", ""),
         "status": status.get("status", "unknown"),
